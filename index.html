@@ -13,11 +13,11 @@
   <style>
     body {
       font-family: 'Kanit', sans-serif;
-      background-color: #0f172a; /* Slate 900 */
-      color: #f8fafc; /* Slate 50 */
+      background-color: #0f172a;
+      color: #f8fafc;
     }
     .glass-card {
-      background: rgba(30, 41, 59, 0.7); /* Slate 800 with opacity */
+      background: rgba(30, 41, 59, 0.7);
       backdrop-filter: blur(12px);
       border: 1px solid rgba(255, 255, 255, 0.1);
     }
@@ -36,7 +36,7 @@
 
   <div class="max-w-4xl mx-auto px-4 pt-6">
     <!-- Header -->
-    <header class="text-center mb-8">
+    <header class="text-center mb-6">
       <div class="inline-block p-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 mb-3 shadow-lg shadow-blue-500/30">
         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5.121 17.804A13.937 13.937 0 0112 16c2.5 0 4.847.655 6.879 1.804M15 10a3 3 0 11-6 0 3 3 0 016 0zm6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path>
@@ -47,6 +47,18 @@
       </h1>
       <p class="text-slate-400 text-sm mt-1">Smart Face Scan & Attendance System</p>
     </header>
+
+    <!-- ส่วนตั้งค่า Web App URL (เพิ่มใหม่) -->
+    <div class="glass-card p-4 rounded-2xl mb-6 flex flex-col md:flex-row items-center gap-3 border border-slate-700/80">
+      <div class="flex items-center gap-2 text-slate-300 font-medium whitespace-nowrap">
+        <span>🔗</span>
+        <label for="gasUrlInput">Web App URL:</label>
+      </div>
+      <input type="text" id="gasUrlInput" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-900/90 border border-slate-700 rounded-xl p-2.5 text-sm text-slate-200 placeholder-slate-500 focus:outline-none focus:border-blue-500">
+      <button onclick="saveGasUrl()" class="w-full md:w-auto px-5 py-2.5 bg-blue-600 hover:bg-blue-500 text-white rounded-xl text-sm font-semibold transition-all whitespace-nowrap shadow-md">
+        บันทึก URL
+      </button>
+    </div>
 
     <!-- Navigation Menu -->
     <nav class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
@@ -76,24 +88,24 @@
       <form id="registerForm" class="space-y-5" onsubmit="handleRegister(event)">
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">รหัสพนักงาน</label>
-          <input type="text" id="regId" placeholder="เช่น EMP-001" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl p-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+          <input type="text" id="regId" placeholder="เช่น EMP-001" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl p-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">ชื่อ - นามสกุล</label>
-          <input type="text" id="regName" placeholder="เช่น นายสมชาย ใจดี" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl p-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+          <input type="text" id="regName" placeholder="เช่น นายสมชาย ใจดี" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl p-3.5 text-white placeholder-slate-500 focus:outline-none focus:border-blue-500">
         </div>
         <div>
-          <label class="block text-sm font-medium text-slate-300 mb-2">คลังสินค้า (ดึงข้อมูลอัตโนมัติจาก Google Sheets)</label>
-          <select id="regWarehouse" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl p-3.5 text-white focus:outline-none focus:border-blue-500 focus:ring-1 focus:ring-blue-500">
+          <label class="block text-sm font-medium text-slate-300 mb-2">คลังสินค้า</label>
+          <select id="regWarehouse" required class="w-full bg-slate-900/80 border border-slate-700 rounded-xl p-3.5 text-white focus:outline-none focus:border-blue-500">
             <option value="">-- กำลังโหลดข้อมูลคลัง --</option>
           </select>
         </div>
         <div>
           <label class="block text-sm font-medium text-slate-300 mb-2">อัปโหลดรูปถ่ายใบหน้า</label>
-          <input type="file" id="regPhoto" accept="image/*" required class="w-full text-slate-400 bg-slate-900/80 border border-slate-700 rounded-xl p-2.5 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer">
+          <input type="file" id="regPhoto" accept="image/*" required class="w-full text-slate-400 bg-slate-900/80 border border-slate-700 rounded-xl p-2.5 file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white cursor-pointer">
         </div>
-        <button type="submit" class="btn-big w-full bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-600/30 font-bold text-lg mt-4">
-          💾 บันทึกข้อมูลพนักงาน
+        <button type="submit" id="btnSubmitReg" class="btn-big w-full bg-blue-600 hover:bg-blue-500 text-white rounded-xl shadow-lg shadow-blue-600/30 font-bold text-lg mt-4 flex items-center justify-center gap-2">
+          <span>💾</span> บันทึกข้อมูลพนักงาน
         </button>
       </form>
     </section>
@@ -101,9 +113,8 @@
     <!-- ==================== 2. หน้าสแกนหน้า ==================== -->
     <section id="page-scan" class="page glass-card p-6 md:p-8 rounded-3xl shadow-2xl hidden">
       <h2 class="text-2xl font-bold mb-6 text-emerald-400 flex items-center gap-2">
-        <span>📸</span> สแกนใบหน้า (รองรับรูปเดี่ยวและกลุ่ม)
+        <span>📸</span> สแกนใบหน้า
       </h2>
-      
       <div class="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
         <button onclick="startCamera()" class="btn-big bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl p-4 flex items-center justify-center gap-2 shadow-lg shadow-emerald-600/30">
           <span>📷</span> เปิดใช้งานกล้อง
@@ -113,8 +124,6 @@
           <input type="file" id="scanUpload" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
         </label>
       </div>
-
-      <!-- ส่วนแสดงผลกล้อง/รูปภาพ -->
       <div class="relative w-full aspect-video bg-slate-900 rounded-2xl overflow-hidden border border-slate-700 flex items-center justify-center">
         <video id="video" autoplay muted playsinline class="w-full h-full object-cover hidden"></video>
         <img id="imagePreview" class="w-full h-full object-contain hidden">
@@ -124,7 +133,6 @@
           <p>กด "เปิดใช้งานกล้อง" หรือ "เลือกอัปโหลดรูปภาพ"</p>
         </div>
       </div>
-
       <button onclick="processScan()" class="btn-big w-full bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl shadow-lg shadow-emerald-600/30 font-bold text-lg mt-6">
         ✅ ยืนยันสแกนและบันทึกเวลา
       </button>
@@ -143,11 +151,10 @@
               <th class="p-4 border-b border-slate-700">รหัส</th>
               <th class="p-4 border-b border-slate-700">ชื่อ-นามสกุล</th>
               <th class="p-4 border-b border-slate-700">คลัง</th>
-              <th class="p-4 border-b border-slate-700 text-center">จัดการ</th>
             </tr>
           </thead>
           <tbody id="employeeTable" class="divide-y divide-slate-700/50">
-            <!-- ข้อมูลพนักงานจะมาแสดงตรงนี้ -->
+            <tr><td colspan="4" class="p-4 text-center text-slate-500">กำลังโหลดข้อมูล...</td></tr>
           </tbody>
         </table>
       </div>
@@ -158,33 +165,29 @@
       <h2 class="text-2xl font-bold mb-6 text-amber-400 flex items-center gap-2">
         <span>📊</span> รายงานบันทึกเวลาเข้า-ออก
       </h2>
-
-      <!-- ตัวกรองข้อมูล -->
       <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 mb-6 bg-slate-900/60 p-4 rounded-2xl border border-slate-700/60">
         <div>
           <label class="block text-xs text-slate-400 mb-1">ตั้งแต่วันที่</label>
-          <input type="date" id="filterStartDate" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:outline-none focus:border-amber-500">
+          <input type="date" id="filterStartDate" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 text-sm">
         </div>
         <div>
           <label class="block text-xs text-slate-400 mb-1">ถึงวันที่</label>
-          <input type="date" id="filterEndDate" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:outline-none focus:border-amber-500">
+          <input type="date" id="filterEndDate" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 text-sm">
         </div>
         <div>
           <label class="block text-xs text-slate-400 mb-1">เลือกคลัง</label>
-          <select id="filterWarehouse" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:outline-none focus:border-amber-500">
+          <select id="filterWarehouse" class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 text-sm">
             <option value="">ทุกคลังสินค้า</option>
           </select>
         </div>
         <div>
           <label class="block text-xs text-slate-400 mb-1">ค้นหาชื่อ/รหัส</label>
-          <input type="text" id="filterName" placeholder="พิมพ์ชื่อพนักงาน..." class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 text-sm focus:outline-none focus:border-amber-500">
+          <input type="text" id="filterName" placeholder="พิมพ์ชื่อพนักงาน..." class="w-full bg-slate-800 border border-slate-700 text-white rounded-lg p-2.5 text-sm">
         </div>
       </div>
-
       <button onclick="downloadCSV()" class="btn-big w-full bg-amber-600 hover:bg-amber-500 text-white rounded-xl shadow-lg shadow-amber-600/30 font-bold text-lg mb-6 flex items-center justify-center gap-2">
         <span>📥</span> ดาวน์โหลดไฟล์รายงาน (CSV)
       </button>
-
       <div class="overflow-x-auto rounded-xl border border-slate-700">
         <table class="w-full text-left border-collapse text-slate-300">
           <thead class="bg-slate-800/80 text-slate-200">
@@ -196,7 +199,7 @@
             </tr>
           </thead>
           <tbody id="attendanceTable" class="divide-y divide-slate-700/50">
-            <!-- ข้อมูลบันทึกเวลาจะมาแสดงตรงนี้ -->
+            <!-- ข้อมูลบันทึกเวลาจะแสดงที่นี่ -->
           </tbody>
         </table>
       </div>
@@ -205,44 +208,52 @@
   </div>
 
   <script>
-    // URL Web App จาก Google Apps Script ของคุณ
-    const GAS_URL = "https://script.google.com/macros/s/AKfycbzfMUpywb1iGJQ1SsU0D8X2KkNAkCb_U1SBk2MsUJA_hxYgVnmgkrBd9HGskAkecMt50Q/exec";
+    // ตั้งค่า URL เริ่มต้น
+    const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbzfMUpywb1iGJQ1SsU0D8X2KkNAkCb_U1SBk2MsUJA_hxYgVnmgkrBd9HGskAkecMt50Q/exec";
+    let GAS_URL = localStorage.getItem("CUSTOM_GAS_URL") || DEFAULT_GAS_URL;
+    let employeesData = [];
 
-    // 1. ฟังก์ชันสลับการแสดงผลหน้าต่างๆ
+    // บันทึก URL ใหม่ลงใน LocalStorage
+    function saveGasUrl() {
+      const inputUrl = document.getElementById("gasUrlInput").value.trim();
+      if (!inputUrl) {
+        alert("กรุณากรอก Web App URL");
+        return;
+      }
+      localStorage.setItem("CUSTOM_GAS_URL", inputUrl);
+      GAS_URL = inputUrl;
+      alert("บันทึก Web App URL สำเร็จ! ระบบกำลังโหลดข้อมูลใหม่...");
+      initData();
+    }
+
     function showPage(pageId) {
       document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
       const activePage = document.getElementById(`page-${pageId}`);
-      if (activePage) {
-        activePage.classList.remove('hidden');
-      }
+      if (activePage) activePage.classList.remove('hidden');
     }
 
-    // 2. ฟังก์ชันดึง AI Models จาก CDN
     async function loadFaceModels() {
-      console.log("กำลังโหลด AI Models จาก CDN...");
       const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
-      
       if (typeof faceapi !== 'undefined') {
         await faceapi.nets.ssdMobilenetv1.loadFromUri(MODEL_URL);
         await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
         await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
-        console.log("โหลด AI Models สำเร็จ!");
       }
     }
 
-    // 3. ฟังก์ชันเริ่มต้นทำงานเมื่อโหลดหน้าเว็บ
     async function initData() {
-      showPage('scan'); // ตั้งค่าเริ่มต้นแสดงหน้าสแกนหน้า
+      // แสดง URL ปัจจุบันในช่อง Input
+      document.getElementById("gasUrlInput").value = GAS_URL;
       
+      showPage('scan');
       try {
         await loadFaceModels();
-        
         const res = await fetch(`${GAS_URL}?action=getInitialData`);
         const data = await res.json();
         
+        // ใส่ตัวเลือกคลังสินค้า
         const regSelect = document.getElementById('regWarehouse');
         const filterSelect = document.getElementById('filterWarehouse');
-        
         if (data.warehouses && data.warehouses.length > 0) {
           regSelect.innerHTML = '<option value="">-- เลือกคลังสินค้า --</option>';
           data.warehouses.forEach(wh => {
@@ -250,8 +261,93 @@
             filterSelect.add(new Option(wh, wh));
           });
         }
+
+        // แสดงรายชื่อพนักงาน
+        if (data.employees) {
+          employeesData = data.employees;
+          renderEmployeeTable(employeesData);
+        }
       } catch (err) {
         console.error("เกิดข้อผิดพลาดในการโหลดข้อมูล:", err);
+      }
+    }
+
+    // แสดงข้อมูลลงตารางจัดการข้อมูล
+    function renderEmployeeTable(employees) {
+      const tbody = document.getElementById('employeeTable');
+      if (!employees || employees.length === 0) {
+        tbody.innerHTML = '<tr><td colspan="4" class="p-4 text-center text-slate-500">ยังไม่มีข้อมูลพนักงาน</td></tr>';
+        return;
+      }
+      
+      tbody.innerHTML = employees.map(emp => `
+        <tr class="hover:bg-slate-800/40">
+          <td class="p-4">
+            ${emp.photoUrl ? `<img src="${emp.photoUrl}" class="w-10 h-10 rounded-full object-cover border border-slate-600">` : '👤'}
+          </td>
+          <td class="p-4 font-mono text-blue-400">${emp.id}</td>
+          <td class="p-4 font-medium">${emp.name}</td>
+          <td class="p-4 text-slate-400">${emp.warehouse}</td>
+        </tr>
+      `).join('');
+    }
+
+    // แปลงไฟล์ภาพเป็น Base64
+    function fileToBase64(file) {
+      return new Promise((resolve, reject) => {
+        const reader = new FileReader();
+        reader.readAsDataURL(file);
+        reader.onload = () => resolve(reader.result);
+        reader.onerror = error => reject(error);
+      });
+    }
+
+    // บันทึกข้อมูลพนักงานใหม่ลง Google Sheets
+    async function handleRegister(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitReg');
+      btn.disabled = true;
+      btn.innerHTML = "⏳ กำลังบันทึกข้อมูล...";
+
+      try {
+        const id = document.getElementById('regId').value;
+        const name = document.getElementById('regName').value;
+        const warehouse = document.getElementById('regWarehouse').value;
+        const photoFile = document.getElementById('regPhoto').files[0];
+        
+        let photoBase64 = "";
+        if (photoFile) {
+          photoBase64 = await fileToBase64(photoFile);
+        }
+
+        const payload = {
+          action: "registerEmployee",
+          data: { id, name, warehouse, photoBase64 }
+        };
+
+        const res = await fetch(GAS_URL, {
+          method: "POST",
+          body: JSON.stringify(payload)
+        });
+
+        const result = await res.json();
+        
+        if (result.success) {
+          alert("บันทึกข้อมูลพนักงานสำเร็จ!");
+          document.getElementById('registerForm').reset();
+          
+          employeesData.push({ id, name, warehouse, photoUrl: photoBase64 });
+          renderEmployeeTable(employeesData);
+          
+          showPage('manage');
+        } else {
+          alert("เกิดข้อผิดพลาด: " + result.message);
+        }
+      } catch (err) {
+        alert("ไม่สามารถเชื่อมต่อระบบได้: " + err);
+      } finally {
+        btn.disabled = false;
+        btn.innerHTML = "💾 บันทึกข้อมูลพนักงาน";
       }
     }
 
@@ -259,7 +355,6 @@
       const video = document.getElementById('video');
       const img = document.getElementById('imagePreview');
       const placeholder = document.getElementById('cameraPlaceholder');
-      
       img.classList.add('hidden');
       placeholder.classList.add('hidden');
       video.classList.remove('hidden');
@@ -274,12 +369,9 @@
       if (file) {
         const reader = new FileReader();
         reader.onload = function(evt) {
-          const video = document.getElementById('video');
+          document.getElementById('video').classList.add('hidden');
+          document.getElementById('cameraPlaceholder').classList.add('hidden');
           const img = document.getElementById('imagePreview');
-          const placeholder = document.getElementById('cameraPlaceholder');
-          
-          video.classList.add('hidden');
-          placeholder.classList.add('hidden');
           img.classList.remove('hidden');
           img.src = evt.target.result;
         };
@@ -287,20 +379,9 @@
       }
     }
 
-    async function handleRegister(e) {
-      e.preventDefault();
-      alert("บันทึกข้อมูลเรียบร้อยแล้ว");
-    }
+    function processScan() { alert("สแกนใบหน้าสำเร็จ"); }
+    function downloadCSV() { alert("ดาวน์โหลดไฟล์รายงาน CSV เรียบร้อย"); }
 
-    function processScan() {
-      alert("สแกนใบหน้าสำเร็จ");
-    }
-
-    function downloadCSV() {
-      alert("ดาวน์โหลดไฟล์รายงาน CSV เรียบร้อย");
-    }
-
-    // เรียกฟังก์ชันเมื่อโหลด DOM เสร็จสิ้น
     document.addEventListener("DOMContentLoaded", initData);
   </script>
 </body>
