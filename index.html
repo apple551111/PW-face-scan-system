@@ -14,11 +14,11 @@
     .btn-big:active { transform: scale(0.97); }
     .mode-btn-active { border: 2px solid #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.5); }
     
-    /* ปรับกรอบกล้องมือถือให้เป็นแนวตั้งและใหญ่ขึ้น */
+    /* กรอบกล้องแนวตั้งขนาดใหญ่ */
     .camera-container {
       width: 100%;
       max-width: 400px;
-      aspect-ratio: 3 / 4; /* สัดส่วนแนวตั้ง */
+      aspect-ratio: 3 / 4;
       margin: 0 auto;
     }
   </style>
@@ -84,8 +84,9 @@
 
         <video id="video" autoplay muted playsinline class="w-full h-full object-cover"></video>
         
+        <!-- กล่องแสดงผลเมื่อสแกนสำเร็จ (จะซ่อนอัตโนมัติใน 1 วินาที) -->
         <div id="scanOverlay" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 hidden w-11/12 max-w-md pointer-events-none z-20">
-           <div id="scanResult" class="bg-emerald-600/90 text-white px-4 py-2.5 rounded-xl font-medium text-sm text-center shadow-lg border border-emerald-400 backdrop-blur-md">
+           <div id="scanResult" class="bg-emerald-600/95 text-white px-4 py-2.5 rounded-xl font-medium text-sm text-center shadow-lg border border-emerald-400 backdrop-blur-md">
               ✅ สแกนสำเร็จ
            </div>
         </div>
@@ -335,23 +336,23 @@
 
       resultBox.innerHTML = `✅ ${modeText}สำเร็จ!<br><span class="text-xs text-slate-200">รหัส: ${emp.id} | ชื่อ: ${emp.name}</span>`;
 
-      try {
-        await safeFetchJson(GAS_URL, {
-          method: "POST",
-          body: JSON.stringify({
-            action: "recordAttendance",
-            data: { 
-              id: emp.id, 
-              name: emp.name, 
-              warehouse: emp.warehouse,
-              scanMode: currentScanMode,
-              shift: shiftVal,
-              ot: otVal
-            }
-          })
-        });
-      } catch(e) { console.error("บันทึกเวลาล้มเหลว", e); }
+      // ส่งข้อมูลบันทึกเวลาไปที่ Google Sheets แบบเบื้องหลัง (Background) ไม่รอให้บล็อกการทำงานต่อ
+      safeFetchJson(GAS_URL, {
+        method: "POST",
+        body: JSON.stringify({
+          action: "recordAttendance",
+          data: { 
+            id: emp.id, 
+            name: emp.name, 
+            warehouse: emp.warehouse,
+            scanMode: currentScanMode,
+            shift: shiftVal,
+            ot: otVal
+          }
+        })
+      }).catch(e => console.error("บันทึกเวลาล้มเหลว", e));
 
+      // กำหนดเวลา 1 วินาที (1000 มิลลิวินาที) ให้กล่องข้อความหายไป และพร้อมให้คนถัดไปสแกนต่อทันที
       setTimeout(() => {
         overlay.classList.add('hidden');
         scanCooldown = false;
@@ -420,17 +421,13 @@
         `<tr><th class="p-2 text-slate-400">รูป</th><th class="p-2 text-slate-400">รหัส</th><th class="p-2 text-slate-400">ชื่อ</th><th class="p-2 text-slate-400">คลัง</th></tr>` + html;
     }
 
-    // ฟังก์ชันแปลงเวลาให้อ่านง่าย และดึงเวลาเร็ว/ช้าที่สุดมาแสดง
     function formatTimeString(timeStr) {
       if (!timeStr || timeStr === '-') return '-';
-      // ถ้าเป็นเวลาแบบ HH:mm:ss อยู่แล้ว
       if (/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) return timeStr;
-      // ถ้าเป็นรูปแบบ ISO / วันที่ ให้แปลงเป็น HH:mm:ss
       const d = new Date(timeStr);
       if (!isNaN(d.getTime())) {
         return d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
       }
-      // ถ้ามีตัว T และ Z แบบมาตรฐาน
       if (timeStr.includes('T')) {
         const parts = timeStr.split('T')[1];
         if (parts) return parts.substring(0, 8);
