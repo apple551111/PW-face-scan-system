@@ -4,38 +4,19 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>ระบบสแกนใบหน้าพนักงาน (Face Recognition System)</title>
-  <!-- Google Fonts: Kanit -->
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-  <!-- Tailwind CSS -->
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- face-api.js -->
   <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
   <style>
-    body {
-      font-family: 'Kanit', sans-serif;
-      background-color: #0f172a;
-      color: #f8fafc;
-    }
-    .glass-card {
-      background: rgba(30, 41, 59, 0.7);
-      backdrop-filter: blur(12px);
-      border: 1px solid rgba(255, 255, 255, 0.1);
-    }
-    .btn-big {
-      min-height: 3.5rem;
-      font-size: 1.125rem;
-      font-weight: 600;
-      transition: all 0.2s ease-in-out;
-    }
-    .btn-big:active {
-      transform: scale(0.97);
-    }
+    body { font-family: 'Kanit', sans-serif; background-color: #0f172a; color: #f8fafc; }
+    .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .btn-big { min-height: 3.5rem; font-size: 1.125rem; font-weight: 600; transition: all 0.2s ease-in-out; }
+    .btn-big:active { transform: scale(0.97); }
   </style>
 </head>
 <body class="min-h-screen pb-10">
 
   <div class="max-w-4xl mx-auto px-4 pt-6">
-    <!-- Header -->
     <header class="text-center mb-6">
       <div class="inline-block p-3 rounded-2xl bg-gradient-to-r from-blue-600 to-indigo-600 mb-3 shadow-lg shadow-blue-500/30">
         <svg class="w-8 h-8 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -60,7 +41,7 @@
       </button>
     </div>
 
-    <!-- Navigation Menu -->
+    <!-- Menu -->
     <nav class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-8">
       <button onclick="showPage('register')" class="btn-big bg-slate-800 hover:bg-blue-600 border border-slate-700 hover:border-blue-500 text-slate-200 hover:text-white rounded-2xl p-4 flex flex-col items-center justify-center gap-1 shadow-md">
         <span class="text-2xl">📝</span>
@@ -80,7 +61,7 @@
       </button>
     </nav>
 
-    <!-- ==================== 1. หน้าลงทะเบียน ==================== -->
+    <!-- 1. ลงทะเบียน -->
     <section id="page-register" class="page glass-card p-6 md:p-8 rounded-3xl shadow-2xl hidden">
       <h2 class="text-2xl font-bold mb-6 text-blue-400 flex items-center gap-2">
         <span>📝</span> ลงทะเบียนพนักงานใหม่
@@ -110,7 +91,7 @@
       </form>
     </section>
 
-    <!-- ==================== 2. หน้าสแกนหน้า ==================== -->
+    <!-- 2. สแกนหน้า -->
     <section id="page-scan" class="page glass-card p-6 md:p-8 rounded-3xl shadow-2xl hidden">
       <h2 class="text-2xl font-bold mb-6 text-emerald-400 flex items-center gap-2">
         <span>📸</span> สแกนใบหน้า
@@ -138,7 +119,7 @@
       </button>
     </section>
 
-    <!-- ==================== 3. หน้าจัดการข้อมูลพนักงาน ==================== -->
+    <!-- 3. จัดการข้อมูล -->
     <section id="page-manage" class="page glass-card p-6 md:p-8 rounded-3xl shadow-2xl hidden">
       <h2 class="text-2xl font-bold mb-6 text-purple-400 flex items-center gap-2">
         <span>👥</span> รายชื่อพนักงานทั้งหมด
@@ -160,7 +141,7 @@
       </div>
     </section>
 
-    <!-- ==================== 4. หน้าบันทึกเวลาเข้า-ออก ==================== -->
+    <!-- 4. บันทึกเวลา -->
     <section id="page-attendance" class="page glass-card p-6 md:p-8 rounded-3xl shadow-2xl hidden">
       <h2 class="text-2xl font-bold mb-6 text-amber-400 flex items-center gap-2">
         <span>📊</span> รายงานบันทึกเวลาเข้า-ออก
@@ -199,7 +180,6 @@
             </tr>
           </thead>
           <tbody id="attendanceTable" class="divide-y divide-slate-700/50">
-            <!-- ข้อมูลบันทึกเวลาจะแสดงที่นี่ -->
           </tbody>
         </table>
       </div>
@@ -220,7 +200,7 @@
       }
       localStorage.setItem("CUSTOM_GAS_URL", inputUrl);
       GAS_URL = inputUrl;
-      alert("บันทึก Web App URL สำเร็จ! ระบบกำลังโหลดข้อมูลใหม่...");
+      alert("บันทึก Web App URL สำเร็จ! กำลังโหลดข้อมูลใหม่...");
       initData();
     }
 
@@ -239,14 +219,31 @@
       }
     }
 
+    // แปลง Response เป็น JSON อย่างปลอดภัยเพื่อป้องกันพังเมื่อเจอ HTML
+    async function safeFetchJson(url, options = {}) {
+      const res = await fetch(url, options);
+      const text = await res.text();
+      try {
+        return JSON.parse(text);
+      } catch (err) {
+        throw new Error("URL ไม่ถูกต้อง หรือสิทธิ์ของ Web App ยังไม่ได้เปิดเป็น Anyone (ระบบคืนค่ากลับมาเป็นหน้าเว็บ HTML แทนที่จะเป็น JSON)");
+      }
+    }
+
     async function initData() {
       document.getElementById("gasUrlInput").value = GAS_URL;
       showPage('scan');
       try {
         await loadFaceModels();
-        const res = await fetch(`${GAS_URL}?action=getInitialData`);
-        const data = await res.json();
+        const data = await safeFetchJson(`${GAS_URL}?action=getInitialData`);
         
+        // หากในชีท 'Web app' ช่อง A2 มีข้อมูล URL ให้ดึงมาใส่ในช่อง input บนหน้าเว็บ
+        if (data.webAppUrl && data.webAppUrl.length > 10) {
+          GAS_URL = data.webAppUrl;
+          localStorage.setItem("CUSTOM_GAS_URL", data.webAppUrl);
+          document.getElementById("gasUrlInput").value = data.webAppUrl;
+        }
+
         const regSelect = document.getElementById('regWarehouse');
         const filterSelect = document.getElementById('filterWarehouse');
         if (data.warehouses && data.warehouses.length > 0) {
@@ -285,7 +282,6 @@
       `).join('');
     }
 
-    // ฟังก์ชันบีบอัดรูปภาพก่อนส่ง
     function compressImage(file, maxWidth = 600, maxHeight = 600, quality = 0.7) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -324,7 +320,6 @@
       });
     }
 
-    // ฟังก์ชันบันทึกข้อมูลพนักงาน
     async function handleRegister(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSubmitReg');
@@ -347,12 +342,10 @@
           data: { id, name, warehouse, photoBase64 }
         };
 
-        const res = await fetch(GAS_URL, {
+        const result = await safeFetchJson(GAS_URL, {
           method: "POST",
           body: JSON.stringify(payload)
         });
-
-        const result = await res.json();
         
         if (result && result.success) {
           alert("บันทึกข้อมูลพนักงานสำเร็จ!");
