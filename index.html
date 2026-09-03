@@ -6,7 +6,6 @@
   <title>ระบบสแกนใบหน้าพนักงาน</title>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
-  <!-- Load Face-API -->
   <script defer src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
   <style>
     body { font-family: 'Kanit', sans-serif; background-color: #0f172a; color: #f8fafc; }
@@ -18,19 +17,16 @@
 </head>
 <body class="min-h-screen pb-10">
   <div class="max-w-5xl mx-auto px-4 pt-4">
-    <!-- Header -->
     <header class="text-center mb-4">
       <h1 class="text-2xl font-bold text-white">ระบบบันทึกเวลาสแกนใบหน้า</h1>
     </header>
 
-    <!-- Web App URL Setup -->
     <div class="glass-card p-3 rounded-2xl mb-4 flex items-center gap-3">
       <label class="whitespace-nowrap text-xs text-slate-300">🔗 Web App URL:</label>
       <input type="text" id="gasUrlInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-1.5 text-xs text-white">
       <button onclick="saveGasUrl()" class="px-3 py-1.5 bg-blue-600 rounded-xl text-xs text-white whitespace-nowrap">โหลดข้อมูล</button>
     </div>
 
-    <!-- Nav -->
     <nav class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
       <button onclick="showPage('scan')" class="btn-big bg-slate-800 rounded-xl text-emerald-400">1. สแกนหน้า</button>
       <button onclick="showPage('register')" class="btn-big bg-slate-800 rounded-xl text-blue-400">2. ลงทะเบียน</button>
@@ -38,9 +34,8 @@
       <button onclick="showPage('attendance')" class="btn-big bg-slate-800 rounded-xl text-amber-400">4. ประวัติ</button>
     </nav>
 
-    <!-- Page 1: Scan (หน้าหลัก) -->
+    <!-- Page 1: Scan -->
     <section id="page-scan" class="page glass-card p-4 rounded-3xl">
-      <!-- ตัวเลือกโหมด สแกนเข้า - สแกนออก -->
       <div class="grid grid-cols-2 gap-3 mb-4">
         <button id="btnModeIn" onclick="setScanMode('IN')" class="py-3 rounded-2xl bg-emerald-600 text-white font-bold text-lg mode-btn-active flex items-center justify-center gap-2">
           ☀️ Scan Time In (เข้างาน)
@@ -50,7 +45,6 @@
         </button>
       </div>
 
-      <!-- Dropdown เลือก Shift และ OT -->
       <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
         <div>
           <label class="block text-xs text-slate-400 mb-1">เลือกกะการทำงาน (Shift):</label>
@@ -67,24 +61,34 @@
       </div>
 
       <div id="modelLoadingStatus" class="text-amber-400 mb-2 text-center text-xs font-semibold">
-        ⏳ กำลังโหลด AI Model และเตรียมกล้อง...
+        ⏳ กำลังโหลด AI Model...
       </div>
 
-      <!-- กรอบกล้องขนาดใหญ่ -->
-      <div class="relative w-full aspect-video bg-black rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex justify-center items-center max-h-[60vh]">
-        <video id="video" autoplay muted playsinline class="w-full h-full object-cover hidden"></video>
+      <!-- กรอบกล้องและปุ่ม เปิด/ปิด กล้อง -->
+      <div class="relative w-full aspect-video bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col justify-center items-center max-h-[60vh]">
+        <!-- หน้าจอตอนกล้องปิด -->
+        <div id="cameraPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-10">
+          <p class="text-slate-400 mb-3 text-sm">กล้องถูกปิดอยู่</p>
+          <button onclick="toggleCamera()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm shadow-lg">
+            📷 เปิดกล้องสแกน
+          </button>
+        </div>
+
+        <video id="video" autoplay muted playsinline class="w-full h-full object-cover"></video>
         
-        <!-- Overlay ผลการสแกน (ปรับขนาดตัวอักษรให้อ่านง่ายพอดี) -->
-        <div id="scanOverlay" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 hidden w-11/12 max-w-md pointer-events-none">
+        <div id="scanOverlay" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 hidden w-11/12 max-w-md pointer-events-none z-20">
            <div id="scanResult" class="bg-emerald-600/90 text-white px-4 py-2.5 rounded-xl font-medium text-sm text-center shadow-lg border border-emerald-400 backdrop-blur-md">
               ✅ สแกนสำเร็จ
            </div>
         </div>
       </div>
-      
-      <button onclick="startCamera()" id="btnStartCamera" class="w-full bg-emerald-600 p-3 rounded-xl font-bold mt-4 hidden">
-        เปิดกล้องสแกน
-      </button>
+
+      <!-- ปุ่มควบคุมกล้องด้านล่าง -->
+      <div class="flex justify-center mt-4">
+        <button id="btnToggleCam" onclick="toggleCamera()" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-semibold">
+          ปิดกล้อง
+        </button>
+      </div>
     </section>
 
     <!-- Page 2: Register -->
@@ -109,7 +113,7 @@
 
     <!-- Page 4: Attendance -->
     <section id="page-attendance" class="page glass-card p-6 rounded-3xl hidden">
-      <h2 class="text-lg font-bold mb-4 text-amber-400">📊 ประวัติเข้างานล่าสุด</h2>
+      <h2 class="text-lg font-bold mb-4 text-amber-400">📊 ประวัติเข้างาน (สรุปต่อคน/วัน)</h2>
       <div class="overflow-x-auto"><table class="w-full text-left text-sm" id="attendanceTable"></table></div>
     </section>
   </div>
@@ -119,11 +123,16 @@
     let employeesData = [];
     let faceMatcher = null;
     let scanCooldown = false;
-    let currentScanMode = "IN"; // Default IN
+    let currentScanMode = "IN";
+    let isCameraActive = false;
+    let mediaStream = null;
 
     function showPage(pageId) {
       document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
       document.getElementById(`page-${pageId}`).classList.remove('hidden');
+      if (pageId !== 'scan') {
+        stopCamera();
+      }
     }
 
     function setScanMode(mode) {
@@ -159,17 +168,14 @@
           document.getElementById("gasUrlInput").value = GAS_URL;
         }
 
-        // โหลดคลังสินค้า
         const regWh = document.getElementById('regWarehouse');
         regWh.innerHTML = '<option value="">-- เลือกคลังสินค้า --</option>';
         (data.warehouses || []).forEach(wh => regWh.add(new Option(wh, wh)));
 
-        // โหลด Shift
         const scanShift = document.getElementById('scanShift');
         scanShift.innerHTML = '<option value="">-- ไม่เลือก Shift --</option>';
         (data.shifts || []).forEach(sh => scanShift.add(new Option(sh, sh)));
 
-        // โหลด OT
         const scanOt = document.getElementById('scanOt');
         scanOt.innerHTML = '<option value="">-- ไม่เลือก OT --</option>';
         (data.ots || []).forEach(ot => scanOt.add(new Option(ot, ot)));
@@ -191,15 +197,11 @@
       initData();
     }
 
-    // --- Face Recognition Optimization ---
     async function initFaceAPI() {
       const status = document.getElementById('modelLoadingStatus');
-      const btnCam = document.getElementById('btnStartCamera');
-      
-      status.innerText = "⏳ กำลังโหลดระบบตรวจจับใบหน้าแบบความเร็วสูง...";
+      status.innerText = "⏳ กำลังโหลดระบบตรวจจับใบหน้า...";
       const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
       
-      // ใช้ TinyFaceDetector เพื่อประมวลผลเร็วขึ้น 3 เท่า
       await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
       await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
       await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
@@ -211,7 +213,6 @@
         if (!emp.photoUrl) continue;
         try {
           const img = await fetchImageFromBase64(emp.photoUrl);
-          // ใช้ TinyFaceDetector ตัวเร็วในการอ่านรูปโปรไฟล์
           const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions()).withFaceLandmarks().withFaceDescriptor();
           if (detection) {
             labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(emp.id, [detection.descriptor]));
@@ -221,9 +222,8 @@
 
       if (labeledDescriptors.length > 0) {
         faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.50);
-        status.innerText = `✅ ระบบพร้อมสแกน (${labeledDescriptors.length} ใบหน้าในระบบ)`;
+        status.innerText = `✅ พร้อมสแกน (${labeledDescriptors.length} ใบหน้าในระบบ) - กรุณากล้องเปิดเพื่อเริ่ม`;
         status.classList.replace('text-amber-400', 'text-emerald-400');
-        startCamera(); // เปิดกล้องให้อัตโนมัติทันทีเมื่อพร้อม
       } else {
         status.innerText = "❌ ไม่พบรูปใบหน้าในระบบ กรุณาลงทะเบียนพนักงานก่อน";
         status.classList.replace('text-amber-400', 'text-red-400');
@@ -239,27 +239,59 @@
       });
     }
 
+    function toggleCamera() {
+      if (isCameraActive) {
+        stopCamera();
+      } else {
+        startCamera();
+      }
+    }
+
     async function startCamera() {
       const video = document.getElementById('video');
-      video.classList.remove('hidden');
-      document.getElementById('btnStartCamera').classList.add('hidden');
+      const placeholder = document.getElementById('cameraPlaceholder');
+      const btnToggle = document.getElementById('btnToggleCam');
 
       try {
-        // จำกัดความละเอียด 640x480 เพื่อความเร็วสูงสุด
-        const stream = await navigator.mediaDevices.getUserMedia({ 
+        mediaStream = await navigator.mediaDevices.getUserMedia({ 
           video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" } 
         });
-        video.srcObject = stream;
+        video.srcObject = mediaStream;
         video.onplay = () => { scanLoop(); };
-      } catch(err) { alert("ไม่สามารถเปิดกล้องได้"); }
+        
+        placeholder.classList.add('hidden');
+        btnToggle.innerText = "ปิดกล้อง";
+        btnToggle.className = "px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-sm font-semibold";
+        isCameraActive = true;
+      } catch(err) { 
+        alert("ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบสิทธิ์การใช้งานกล้อง"); 
+      }
+    }
+
+    function stopCamera() {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+      }
+      const video = document.getElementById('video');
+      video.srcObject = null;
+      
+      const placeholder = document.getElementById('cameraPlaceholder');
+      const btnToggle = document.getElementById('btnToggleCam');
+      
+      placeholder.classList.remove('hidden');
+      if(btnToggle) {
+        btnToggle.innerText = "เปิดกล้อง";
+        btnToggle.className = "px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold";
+      }
+      isCameraActive = false;
     }
 
     async function scanLoop() {
       const video = document.getElementById('video');
-      if (video.paused || video.ended || !faceMatcher) return;
+      if (!isCameraActive || video.paused || video.ended || !faceMatcher) return;
 
       if (!scanCooldown) {
-        // ใช้ TinyFaceDetector Options เพิ่มความเร็วในการสแกนเรียลไทม์
         const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
           .withFaceLandmarks()
           .withFaceDescriptor();
@@ -275,8 +307,9 @@
         }
       }
       
-      // หน่วงเวลาเช็คทุกๆ 200ms เพื่อลดภาระ CPU
-      setTimeout(() => requestAnimationFrame(scanLoop), 200);
+      if (isCameraActive) {
+        setTimeout(() => requestAnimationFrame(scanLoop), 200);
+      }
     }
 
     async function handleAutoScanSuccess(emp) {
@@ -311,14 +344,13 @@
         });
       } catch(e) { console.error("บันทึกเวลาล้มเหลว", e); }
 
-      // ค้างไว้ 2.5 วินาทีแล้วรีเซ็ตรับคนต่อไป
+      // ตั้งเวลาหน่วง 1 วินาที (1000ms) แล้วพร้อมสำหรับคนถัดไป
       setTimeout(() => {
         overlay.classList.add('hidden');
         scanCooldown = false;
-      }, 2500);
+      }, 1000);
     }
 
-    // --- Register & Compression ---
     async function compressImage(file) {
       return new Promise((resolve) => {
         const reader = new FileReader();
@@ -381,18 +413,56 @@
         `<tr><th class="p-2 text-slate-400">รูป</th><th class="p-2 text-slate-400">รหัส</th><th class="p-2 text-slate-400">ชื่อ</th><th class="p-2 text-slate-400">คลัง</th></tr>` + html;
     }
 
+    // ฟังก์ชันรวมแถวพนักงานใน 1 บรรทัดต่อวัน โดยเลือกเวลาที่เร็วที่สุดเป็น Time in และช้าที่สุดเป็น Time out
     function renderAttTable(logs) {
-      const html = logs.map(l => `
-        <tr class="border-b border-slate-700">
-          <td class="p-2 text-xs text-slate-400">${new Date(l.time).toLocaleString('th-TH')}</td>
-          <td class="p-2 text-emerald-400 font-mono">${l.id}</td>
-          <td class="p-2">${l.name}</td>
-          <td class="p-2 text-slate-300">${l.timeIn || '-'}</td>
-          <td class="p-2 text-slate-300">${l.timeOut || '-'}</td>
-          <td class="p-2 text-slate-400">${l.ot || '-'}</td>
-        </tr>`).join('');
+      const grouped = {};
+      logs.forEach(l => {
+        const dateStr = l.time ? new Date(l.time).toLocaleDateString('th-TH') : '-';
+        const key = `${l.id}_${dateStr}`;
+        if (!grouped[key]) {
+          grouped[key] = {
+            date: dateStr,
+            id: l.id,
+            name: l.name,
+            ot: '-',
+            times: []
+          };
+        }
+        if (l.timeIn && l.timeIn !== '-') grouped[key].times.push(l.timeIn);
+        if (l.timeOut && l.timeOut !== '-') grouped[key].times.push(l.timeOut);
+        if (!l.timeIn && !l.timeOut && l.time) {
+          grouped[key].times.push(new Date(l.time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+        }
+        if (l.ot && l.ot !== '-') grouped[key].ot = l.ot;
+      });
+
+      const rows = Object.values(grouped).map(g => {
+        let validTimes = [...new Set(g.times)].filter(v => v && v !== '-');
+        validTimes.sort(); // เรียงเวลาจากน้อยไปมาก (เร็ว -> ช้า)
+        
+        let timeIn = validTimes.length > 0 ? validTimes[0] : '-';
+        let timeOut = validTimes.length > 1 ? validTimes[validTimes.length - 1] : '-';
+
+        return `
+          <tr class="border-b border-slate-700">
+            <td class="p-2 text-xs text-slate-400">${g.date}</td>
+            <td class="p-2 text-emerald-400 font-mono">${g.id}</td>
+            <td class="p-2">${g.name}</td>
+            <td class="p-2 text-slate-300">${timeIn}</td>
+            <td class="p-2 text-slate-300">${timeOut}</td>
+            <td class="p-2 text-slate-400">${g.ot}</td>
+          </tr>`;
+      }).join('');
+
       document.getElementById('attendanceTable').innerHTML = 
-        `<tr><th class="p-2 text-slate-400">Timestamp</th><th class="p-2 text-slate-400">รหัส</th><th class="p-2 text-slate-400">ชื่อ</th><th class="p-2 text-slate-400">Time in</th><th class="p-2 text-slate-400">Time out</th><th class="p-2 text-slate-400">OT</th></tr>` + html;
+        `<tr>
+           <th class="p-2 text-slate-400">วันที่</th>
+           <th class="p-2 text-slate-400">รหัส</th>
+           <th class="p-2 text-slate-400">ชื่อ</th>
+           <th class="p-2 text-slate-400">Time in (เร็วที่สุด)</th>
+           <th class="p-2 text-slate-400">Time out (ช้าที่สุด)</th>
+           <th class="p-2 text-slate-400">OT</th>
+         </tr>` + rows;
     }
 
     document.addEventListener("DOMContentLoaded", () => {
