@@ -48,7 +48,7 @@
       <p class="text-slate-400 text-sm mt-1">Smart Face Scan & Attendance System</p>
     </header>
 
-    <!-- ส่วนตั้งค่า Web App URL (เพิ่มใหม่) -->
+    <!-- ส่วนตั้งค่า Web App URL -->
     <div class="glass-card p-4 rounded-2xl mb-6 flex flex-col md:flex-row items-center gap-3 border border-slate-700/80">
       <div class="flex items-center gap-2 text-slate-300 font-medium whitespace-nowrap">
         <span>🔗</span>
@@ -208,12 +208,10 @@
   </div>
 
   <script>
-    // ตั้งค่า URL เริ่มต้น
     const DEFAULT_GAS_URL = "https://script.google.com/macros/s/AKfycbzfMUpywb1iGJQ1SsU0D8X2KkNAkCb_U1SBk2MsUJA_hxYgVnmgkrBd9HGskAkecMt50Q/exec";
     let GAS_URL = localStorage.getItem("CUSTOM_GAS_URL") || DEFAULT_GAS_URL;
     let employeesData = [];
 
-    // บันทึก URL ใหม่ลงใน LocalStorage
     function saveGasUrl() {
       const inputUrl = document.getElementById("gasUrlInput").value.trim();
       if (!inputUrl) {
@@ -242,16 +240,13 @@
     }
 
     async function initData() {
-      // แสดง URL ปัจจุบันในช่อง Input
       document.getElementById("gasUrlInput").value = GAS_URL;
-      
       showPage('scan');
       try {
         await loadFaceModels();
         const res = await fetch(`${GAS_URL}?action=getInitialData`);
         const data = await res.json();
         
-        // ใส่ตัวเลือกคลังสินค้า
         const regSelect = document.getElementById('regWarehouse');
         const filterSelect = document.getElementById('filterWarehouse');
         if (data.warehouses && data.warehouses.length > 0) {
@@ -262,7 +257,6 @@
           });
         }
 
-        // แสดงรายชื่อพนักงาน
         if (data.employees) {
           employeesData = data.employees;
           renderEmployeeTable(employeesData);
@@ -272,7 +266,6 @@
       }
     }
 
-    // แสดงข้อมูลลงตารางจัดการข้อมูล
     function renderEmployeeTable(employees) {
       const tbody = document.getElementById('employeeTable');
       if (!employees || employees.length === 0) {
@@ -292,22 +285,55 @@
       `).join('');
     }
 
-    // แปลงไฟล์ภาพเป็น Base64
-    function fileToBase64(file) {
+    // -------------------------------------------------------------
+    // ฟังก์ชันย่อและบีบอัดขนาดรูปภาพก่อนแปลงเป็น Base64
+    // -------------------------------------------------------------
+    function compressImage(file, maxWidth = 600, maxHeight = 600, quality = 0.7) {
       return new Promise((resolve, reject) => {
         const reader = new FileReader();
         reader.readAsDataURL(file);
-        reader.onload = () => resolve(reader.result);
-        reader.onerror = error => reject(error);
+        reader.onload = (event) => {
+          const img = new Image();
+          img.src = event.target.result;
+          img.onload = () => {
+            let width = img.width;
+            let height = img.height;
+
+            // คำนวณอัตราส่วนเพื่อย่อขนาดภาพโดยไม่เสียสัดส่วน
+            if (width > height) {
+              if (width > maxWidth) {
+                height = Math.round((height * maxWidth) / width);
+                width = maxWidth;
+              }
+            } else {
+              if (height > maxHeight) {
+                width = Math.round((width * maxHeight) / height);
+                height = maxHeight;
+              }
+            }
+
+            const canvas = document.createElement('canvas');
+            canvas.width = width;
+            canvas.height = height;
+            const ctx = canvas.getContext('2d');
+            ctx.drawImage(img, 0, 0, width, height);
+
+            // บีบอัดเป็นรูป JPEG คุณภาพ 70%
+            const compressedBase64 = canvas.toDataURL('image/jpeg', quality);
+            resolve(compressedBase64);
+          };
+          img.onerror = (error) => reject(error);
+        };
+        reader.onerror = (error) => reject(error);
       });
     }
 
-    // บันทึกข้อมูลพนักงานใหม่ลง Google Sheets
+    // บันทึกข้อมูลพนักงานใหม่
     async function handleRegister(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSubmitReg');
       btn.disabled = true;
-      btn.innerHTML = "⏳ กำลังบันทึกข้อมูล...";
+      btn.innerHTML = "⏳ กำลังบีบอัดรูปและบันทึกข้อมูล...";
 
       try {
         const id = document.getElementById('regId').value;
@@ -317,7 +343,8 @@
         
         let photoBase64 = "";
         if (photoFile) {
-          photoBase64 = await fileToBase64(photoFile);
+          // เรียกใช้ฟังก์ชันบีบอัดรูปภาพ
+          photoBase64 = await compressImage(photoFile);
         }
 
         const payload = {
@@ -341,7 +368,7 @@
           
           showPage('manage');
         } else {
-          alert("เกิดข้อผิดพลาด: " + result.message);
+          alert("เกิดข้อผิดพลาดจากเซิร์ฟเวอร์: " + result.message);
         }
       } catch (err) {
         alert("ไม่สามารถเชื่อมต่อระบบได้: " + err);
