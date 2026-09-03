@@ -13,6 +13,14 @@
     .btn-big { min-height: 3rem; font-size: 1rem; font-weight: 600; transition: all 0.2s ease-in-out; }
     .btn-big:active { transform: scale(0.97); }
     .mode-btn-active { border: 2px solid #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.5); }
+    
+    /* ปรับกรอบกล้องมือถือให้เป็นแนวตั้งและใหญ่ขึ้น */
+    .camera-container {
+      width: 100%;
+      max-width: 400px;
+      aspect-ratio: 3 / 4; /* สัดส่วนแนวตั้ง */
+      margin: 0 auto;
+    }
   </style>
 </head>
 <body class="min-h-screen pb-10">
@@ -64,8 +72,8 @@
         ⏳ กำลังโหลด AI Model...
       </div>
 
-      <!-- กรอบกล้องและปุ่ม เปิด/ปิด กล้อง -->
-      <div class="relative w-full aspect-video bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col justify-center items-center max-h-[60vh]">
+      <!-- กรอบกล้องแนวตั้งขนาดใหญ่ -->
+      <div class="camera-container relative bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col justify-center items-center">
         <!-- หน้าจอตอนกล้องปิด -->
         <div id="cameraPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-10">
           <p class="text-slate-400 mb-3 text-sm">กล้องถูกปิดอยู่</p>
@@ -254,7 +262,7 @@
 
       try {
         mediaStream = await navigator.mediaDevices.getUserMedia({ 
-          video: { width: { ideal: 640 }, height: { ideal: 480 }, facingMode: "user" } 
+          video: { width: { ideal: 480 }, height: { ideal: 640 }, facingMode: "user" } 
         });
         video.srcObject = mediaStream;
         video.onplay = () => { scanLoop(); };
@@ -344,7 +352,6 @@
         });
       } catch(e) { console.error("บันทึกเวลาล้มเหลว", e); }
 
-      // ตั้งเวลาหน่วง 1 วินาที (1000ms) แล้วพร้อมสำหรับคนถัดไป
       setTimeout(() => {
         overlay.classList.add('hidden');
         scanCooldown = false;
@@ -413,7 +420,24 @@
         `<tr><th class="p-2 text-slate-400">รูป</th><th class="p-2 text-slate-400">รหัส</th><th class="p-2 text-slate-400">ชื่อ</th><th class="p-2 text-slate-400">คลัง</th></tr>` + html;
     }
 
-    // ฟังก์ชันรวมแถวพนักงานใน 1 บรรทัดต่อวัน โดยเลือกเวลาที่เร็วที่สุดเป็น Time in และช้าที่สุดเป็น Time out
+    // ฟังก์ชันแปลงเวลาให้อ่านง่าย และดึงเวลาเร็ว/ช้าที่สุดมาแสดง
+    function formatTimeString(timeStr) {
+      if (!timeStr || timeStr === '-') return '-';
+      // ถ้าเป็นเวลาแบบ HH:mm:ss อยู่แล้ว
+      if (/^\d{2}:\d{2}:\d{2}$/.test(timeStr)) return timeStr;
+      // ถ้าเป็นรูปแบบ ISO / วันที่ ให้แปลงเป็น HH:mm:ss
+      const d = new Date(timeStr);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+      }
+      // ถ้ามีตัว T และ Z แบบมาตรฐาน
+      if (timeStr.includes('T')) {
+        const parts = timeStr.split('T')[1];
+        if (parts) return parts.substring(0, 8);
+      }
+      return timeStr;
+    }
+
     function renderAttTable(logs) {
       const grouped = {};
       logs.forEach(l => {
@@ -428,17 +452,17 @@
             times: []
           };
         }
-        if (l.timeIn && l.timeIn !== '-') grouped[key].times.push(l.timeIn);
-        if (l.timeOut && l.timeOut !== '-') grouped[key].times.push(l.timeOut);
+        if (l.timeIn && l.timeIn !== '-') grouped[key].times.push(formatTimeString(l.timeIn));
+        if (l.timeOut && l.timeOut !== '-') grouped[key].times.push(formatTimeString(l.timeOut));
         if (!l.timeIn && !l.timeOut && l.time) {
-          grouped[key].times.push(new Date(l.time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit' }));
+          grouped[key].times.push(new Date(l.time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }));
         }
         if (l.ot && l.ot !== '-') grouped[key].ot = l.ot;
       });
 
       const rows = Object.values(grouped).map(g => {
         let validTimes = [...new Set(g.times)].filter(v => v && v !== '-');
-        validTimes.sort(); // เรียงเวลาจากน้อยไปมาก (เร็ว -> ช้า)
+        validTimes.sort(); 
         
         let timeIn = validTimes.length > 0 ? validTimes[0] : '-';
         let timeOut = validTimes.length > 1 ? validTimes[validTimes.length - 1] : '-';
