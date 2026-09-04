@@ -16,7 +16,7 @@
     .camera-container { width: 100%; max-width: 400px; aspect-ratio: 3 / 4; margin: 0 auto; }
   </style>
 </head>
-<body class="min-h-screen pb-10">
+<body class="min-h-screen pb-10" onload="initData()">
   <div class="max-w-5xl mx-auto px-4 pt-4">
     <header class="text-center mb-4">
       <h1 class="text-2xl font-bold text-white">ระบบบันทึกเวลาสแกนใบหน้า</h1>
@@ -24,8 +24,8 @@
 
     <div class="glass-card p-3 rounded-2xl mb-4 flex items-center gap-3">
       <label class="whitespace-nowrap text-xs text-slate-300">🔗 Web App URL:</label>
-      <input type="text" id="gasUrlInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-1.5 text-xs text-white">
-      <button onclick="saveGasUrl()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs text-white whitespace-nowrap">โหลดข้อมูล</button>
+      <input type="text" id="gasUrlInput" readonly class="w-full bg-slate-900 border border-slate-700 rounded-xl p-1.5 text-xs text-white opacity-80 cursor-not-allowed" title="ดึงลิงก์จากชีทอัตโนมัติ">
+      <button onclick="initData()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs text-white whitespace-nowrap">รีเฟรช</button>
     </div>
 
     <nav class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
@@ -47,8 +47,15 @@
         </button>
       </div>
 
+      <div class="mb-3">
+        <label class="block text-xs text-slate-400 mb-1">🏢 เลือกคลังสินค้า (Warehouse) *:</label>
+        <select id="scanWarehouse" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500">
+          <option value="">-- กำลังโหลดคลังสินค้า --</option>
+        </select>
+      </div>
+
       <div class="mb-4">
-        <label class="block text-xs text-slate-400 mb-1">เลือกกะการทำงาน (Shift) *จำเป็นต้องเลือกเพื่อคำนวณ OT:</label>
+        <label class="block text-xs text-slate-400 mb-1">⏳ เลือกกะการทำงาน (Shift) *จำเป็นสำหรับคำนวณ OT:</label>
         <select id="scanShift" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500">
           <option value="">-- กำลังโหลด Shift --</option>
         </select>
@@ -89,7 +96,7 @@
         <input type="text" id="regId" placeholder="รหัสพนักงาน" required class="w-full bg-slate-900 rounded-xl p-3 text-sm text-white border border-slate-700">
         <input type="text" id="regName" placeholder="ชื่อ-นามสกุล" required class="w-full bg-slate-900 rounded-xl p-3 text-sm text-white border border-slate-700">
         <select id="regWarehouse" required class="w-full bg-slate-900 rounded-xl p-3 text-sm text-white border border-slate-700">
-          <option value="">-- เลือกคลังสินค้า --</option>
+          <option value="">-- เลือกคลังสินค้าประจำตัว --</option>
         </select>
         <input type="file" id="regPhoto" accept="image/*" required class="w-full bg-slate-900 rounded-xl p-2 text-sm text-slate-400 border border-slate-700">
         <button type="submit" id="btnSubmitReg" class="w-full bg-blue-600 hover:bg-blue-500 p-3 rounded-xl font-bold text-sm text-white">บันทึกข้อมูล</button>
@@ -135,10 +142,11 @@
   </div>
 
   <script>
-    let GAS_URL = localStorage.getItem("CUSTOM_GAS_URL") || "";
+    let GAS_URL = "";
     let employeesData = [];
     let attendancesRaw = [];
     let shiftsData = [];
+    let warehousesData = [];
     let faceMatcher = null;
     let scanCooldown = false;
     let currentScanMode = "IN";
@@ -184,21 +192,27 @@
     }
 
     async function initData() {
-      if (!GAS_URL) return;
-      document.getElementById("gasUrlInput").value = GAS_URL;
+      // ดึง URL ปัจจุบันของหน้าเว็บที่เปิดใช้งานเพื่อติดต่อ Apps Script อัตโนมัติ
+      GAS_URL = window.location.href.split('?')[0];
       
       try {
         const data = await safeFetchJson(`${GAS_URL}?action=getInitialData`);
         
         if (data.webAppUrl && data.webAppUrl.includes("script.google.com")) {
           GAS_URL = data.webAppUrl;
-          localStorage.setItem("CUSTOM_GAS_URL", GAS_URL);
+          document.getElementById("gasUrlInput").value = GAS_URL;
+        } else {
           document.getElementById("gasUrlInput").value = GAS_URL;
         }
 
+        warehousesData = data.warehouses || [];
+        const scanWh = document.getElementById('scanWarehouse');
+        scanWh.innerHTML = '<option value="">-- กรุณาเลือกคลังสินค้า --</option>';
+        warehousesData.forEach(wh => scanWh.add(new Option(wh, wh)));
+
         const regWh = document.getElementById('regWarehouse');
-        regWh.innerHTML = '<option value="">-- เลือกคลังสินค้า --</option>';
-        (data.warehouses || []).forEach(wh => regWh.add(new Option(wh, wh)));
+        regWh.innerHTML = '<option value="">-- เลือกคลังสินค้าประจำตัว --</option>';
+        warehousesData.forEach(wh => regWh.add(new Option(wh, wh)));
 
         shiftsData = data.shifts || [];
         const scanShift = document.getElementById('scanShift');
@@ -214,20 +228,43 @@
         await initFaceAPI();
 
       } catch (err) {
-        alert("โหลดข้อมูลล้มเหลว: " + err.message);
-      }
-    }
+        // กรณีเปิดผ่าน Local file หรือ Test ให้ลองดึงผ่าน Script URL ที่บันทึกไว้ใน LocalStorage แทน
+        let savedUrl = localStorage.getItem("CUSTOM_GAS_URL");
+        if (savedUrl && !GAS_URL.includes("script.google.com")) {
+          GAS_URL = savedUrl;
+          document.getElementById("gasUrlInput").value = GAS_URL;
+          try {
+            const data2 = await safeFetchJson(`${GAS_URL}?action=getInitialData`);
+            warehousesData = data2.warehouses || [];
+            const scanWh = document.getElementById('scanWarehouse');
+            scanWh.innerHTML = '<option value="">-- กรุณาเลือกคลังสินค้า --</option>';
+            warehousesData.forEach(wh => scanWh.add(new Option(wh, wh)));
 
-    function saveGasUrl() {
-      GAS_URL = document.getElementById("gasUrlInput").value.trim();
-      localStorage.setItem("CUSTOM_GAS_URL", GAS_URL);
-      initData();
+            const regWh = document.getElementById('regWarehouse');
+            regWh.innerHTML = '<option value="">-- เลือกคลังสินค้าประจำตัว --</option>';
+            warehousesData.forEach(wh => regWh.add(new Option(wh, wh)));
+
+            shiftsData = data2.shifts || [];
+            const scanShift = document.getElementById('scanShift');
+            scanShift.innerHTML = '<option value="">-- กรุณาเลือกกะการทำงาน --</option>';
+            shiftsData.forEach(sh => scanShift.add(new Option(sh, sh)));
+
+            employeesData = data2.employees || [];
+            attendancesRaw = data2.attendances || [];
+            renderEmpTable();
+            renderAttTable(attendancesRaw);
+            await initFaceAPI();
+            return;
+          } catch(e) {}
+        }
+        alert("โหลดข้อมูลล้มเหลว: " + err.message + "\n(โปรดตรวจสอบว่าทำการ Deploy เป็น Web App เรียบร้อยแล้ว)");
+      }
     }
 
     async function initFaceAPI() {
       const status = document.getElementById('modelLoadingStatus');
       if (typeof faceapi === 'undefined') {
-        status.innerText = "❌ ไม่สามารถโหลดระบบตรวจจับใบหน้าได้ (โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ต)";
+        status.innerText = "❌ ไม่สามารถโหลดระบบตรวจจับใบหน้าได้ (โปรดตรวจสอบอินเทอร์เน็ต)";
         status.className = "text-red-400 mb-2 text-center text-xs font-semibold";
         return;
       }
@@ -352,9 +389,16 @@
     }
 
     async function handleAutoScanSuccess(emp) {
+      const warehouseVal = document.getElementById('scanWarehouse').value;
       const shiftVal = document.getElementById('scanShift').value;
+
+      if (!warehouseVal) {
+        alert("⚠️ กรุณาเลือก 'คลังสินค้า' ก่อนทำการสแกนหน้า!");
+        scanCooldown = false;
+        return;
+      }
       if (!shiftVal) {
-        alert("⚠️ กรุณาเลือกกะการทำงาน (Shift) ก่อนทำการสแกนหน้าค่ะ!");
+        alert("⚠️ กรุณาเลือก 'กะการทำงาน (Shift)' ก่อนทำการสแกนหน้า!");
         scanCooldown = false;
         return;
       }
@@ -368,7 +412,7 @@
         ? "bg-emerald-600/95 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-lg text-center"
         : "bg-rose-600/95 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-lg text-center";
 
-      resultBox.innerHTML = `✅ ${modeText}สำเร็จ!<br><span class="text-xs text-slate-200">รหัส: ${emp.id} | ชื่อ: ${emp.name}</span>`;
+      resultBox.innerHTML = `✅ ${modeText}สำเร็จ!<br><span class="text-xs text-slate-200">รหัส: ${emp.id} | ชื่อ: ${emp.name} | คลัง: ${warehouseVal}</span>`;
 
       try {
         const res = await safeFetchJson(GAS_URL, {
@@ -378,14 +422,17 @@
             data: { 
               id: emp.id, 
               name: emp.name, 
-              warehouse: emp.warehouse || "-", // รับประกันว่าส่งค่า Warehouse 
+              warehouse: warehouseVal, 
               scanMode: currentScanMode,
               shift: shiftVal
             }
           })
         });
-        if (res && res.attendances) {
-          attendancesRaw = res.attendances;
+
+        // รีเฟรชประวัติหลังบันทึก
+        const refreshData = await safeFetchJson(`${GAS_URL}?action=getInitialData`);
+        if (refreshData && refreshData.attendances) {
+          attendancesRaw = refreshData.attendances;
           renderAttTable(attendancesRaw);
         }
       } catch(e) { console.error("บันทึกเวลาล้มเหลว", e); }
@@ -393,7 +440,7 @@
       setTimeout(() => {
         overlay.classList.add('hidden');
         scanCooldown = false;
-      }, 1500);
+      }, 1800);
     }
 
     async function compressImage(file) {
@@ -454,12 +501,12 @@
           <td class="p-2">${imgUrl ? `<img src="${imgUrl}" class="w-8 h-8 rounded-full object-cover">` : ''}</td>
           <td class="p-2 font-mono text-blue-400">${e.id}</td>
           <td class="p-2">${e.name}</td>
-          <td class="p-2 text-slate-400">${e.warehouse || '-'}</td>
+          <td class="p-2 text-slate-300 font-semibold">${e.warehouse || '-'}</td>
         </tr>`;
       }).join('');
 
       document.getElementById('employeeTable').innerHTML = 
-        `<tr><th class="p-2 text-slate-400">รูป</th><th class="p-2 text-slate-400">รหัส</th><th class="p-2 text-slate-400">ชื่อ</th><th class="p-2 text-slate-400">คลัง</th></tr>` + html;
+        `<tr><th class="p-2 text-slate-400">รูป</th><th class="p-2 text-slate-400">รหัส</th><th class="p-2 text-slate-400">ชื่อ</th><th class="p-2 text-slate-400">คลังประจำตัว</th></tr>` + html;
     }
 
     function formatTimeString(timeStr) {
@@ -483,6 +530,7 @@
           <td class="p-2 text-xs text-slate-300 font-semibold">${l.date || '-'}</td>
           <td class="p-2 text-emerald-400 font-mono">${l.id || '-'}</td>
           <td class="p-2">${l.name || '-'}</td>
+          <td class="p-2 text-cyan-300 font-medium">${l.warehouse || '-'}</td>
           <td class="p-2 text-blue-300">${l.shift || '-'}</td>
           <td class="p-2 text-slate-300">${formatTimeString(l.timeIn)}</td>
           <td class="p-2 text-slate-300">${formatTimeString(l.timeOut)}</td>
@@ -494,14 +542,13 @@
            <th class="p-2 text-slate-400">วันที่</th>
            <th class="p-2 text-slate-400">รหัส</th>
            <th class="p-2 text-slate-400">ชื่อ</th>
+           <th class="p-2 text-slate-400">คลัง</th>
            <th class="p-2 text-slate-400">กะ (Shift)</th>
            <th class="p-2 text-slate-400">Time in</th>
            <th class="p-2 text-slate-400">Time out</th>
            <th class="p-2 text-slate-400">OT</th>
          </tr>` + rows;
     }
-
-    // สำหรับเมนู Summary คงโค้ดเดิมไว้ เนื่องจากไม่มีการแนบโค้ดส่วนนี้มาในตัวอย่าง
   </script>
 </body>
 </html>
