@@ -10,17 +10,10 @@
   <style>
     body { font-family: 'Kanit', sans-serif; background-color: #0f172a; color: #f8fafc; }
     .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
-    .btn-big { min-height: 3rem; font-size: 1rem; font-weight: 600; transition: all 0.2s ease-in-out; }
+    .btn-big { min-height: 3rem; font-size: 0.95rem; font-weight: 600; transition: all 0.2s ease-in-out; }
     .btn-big:active { transform: scale(0.97); }
     .mode-btn-active { border: 2px solid #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.5); }
-    
-    /* กรอบกล้องแนวตั้งขนาดใหญ่ */
-    .camera-container {
-      width: 100%;
-      max-width: 400px;
-      aspect-ratio: 3 / 4;
-      margin: 0 auto;
-    }
+    .camera-container { width: 100%; max-width: 400px; aspect-ratio: 3 / 4; margin: 0 auto; }
   </style>
 </head>
 <body class="min-h-screen pb-10">
@@ -35,46 +28,37 @@
       <button onclick="saveGasUrl()" class="px-3 py-1.5 bg-blue-600 rounded-xl text-xs text-white whitespace-nowrap">โหลดข้อมูล</button>
     </div>
 
-    <nav class="grid grid-cols-2 md:grid-cols-4 gap-2 mb-4">
+    <nav class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
       <button onclick="showPage('scan')" class="btn-big bg-slate-800 rounded-xl text-emerald-400">1. สแกนหน้า</button>
       <button onclick="showPage('register')" class="btn-big bg-slate-800 rounded-xl text-blue-400">2. ลงทะเบียน</button>
-      <button onclick="showPage('manage')" class="btn-big bg-slate-800 rounded-xl text-purple-400">3. ข้อมูลพนักงาน</button>
+      <button onclick="showPage('manage')" class="btn-big bg-slate-800 rounded-xl text-purple-400">3. พนักงาน</button>
       <button onclick="showPage('attendance')" class="btn-big bg-slate-800 rounded-xl text-amber-400">4. ประวัติ</button>
+      <button onclick="showPage('summary')" class="btn-big bg-slate-800 rounded-xl text-rose-400 col-span-2 md:col-span-1">5. สรุปรายกะ</button>
     </nav>
 
     <!-- Page 1: Scan -->
     <section id="page-scan" class="page glass-card p-4 rounded-3xl">
       <div class="grid grid-cols-2 gap-3 mb-4">
-        <button id="btnModeIn" onclick="setScanMode('IN')" class="py-3 rounded-2xl bg-emerald-600 text-white font-bold text-lg mode-btn-active flex items-center justify-center gap-2">
-          ☀️ Scan Time In (เข้างาน)
+        <button id="btnModeIn" onclick="setScanMode('IN')" class="py-3 rounded-2xl bg-emerald-600 text-white font-bold text-base mode-btn-active flex items-center justify-center gap-2">
+          ☀️ เข้างาน
         </button>
-        <button id="btnModeOut" onclick="setScanMode('OUT')" class="py-3 rounded-2xl bg-rose-600 text-white font-bold text-lg opacity-60 flex items-center justify-center gap-2">
-          🌙 Scan Time Out (เลิกงาน)
+        <button id="btnModeOut" onclick="setScanMode('OUT')" class="py-3 rounded-2xl bg-rose-600 text-white font-bold text-base opacity-60 flex items-center justify-center gap-2">
+          🌙 เลิกงาน
         </button>
       </div>
 
-      <div class="grid grid-cols-1 md:grid-cols-2 gap-3 mb-4">
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">เลือกกะการทำงาน (Shift):</label>
-          <select id="scanShift" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
-            <option value="">-- กำลังโหลด Shift --</option>
-          </select>
-        </div>
-        <div>
-          <label class="block text-xs text-slate-400 mb-1">เลือก OT:</label>
-          <select id="scanOt" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-2.5 text-sm text-white focus:outline-none focus:border-blue-500">
-            <option value="">-- กำลังโหลด OT --</option>
-          </select>
-        </div>
+      <div class="mb-4">
+        <label class="block text-xs text-slate-400 mb-1">เลือกกะการทำงาน (Shift) *จำเป็นต้องเลือกเพื่อคำนวณ OT:</label>
+        <select id="scanShift" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500">
+          <option value="">-- กำลังโหลด Shift --</option>
+        </select>
       </div>
 
       <div id="modelLoadingStatus" class="text-amber-400 mb-2 text-center text-xs font-semibold">
         ⏳ กำลังโหลด AI Model...
       </div>
 
-      <!-- กรอบกล้องแนวตั้งขนาดใหญ่ -->
       <div class="camera-container relative bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col justify-center items-center">
-        <!-- หน้าจอตอนกล้องปิด -->
         <div id="cameraPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-10">
           <p class="text-slate-400 mb-3 text-sm">กล้องถูกปิดอยู่</p>
           <button onclick="toggleCamera()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm shadow-lg">
@@ -84,7 +68,6 @@
 
         <video id="video" autoplay muted playsinline class="w-full h-full object-cover"></video>
         
-        <!-- กล่องแสดงผลเมื่อสแกนสำเร็จ (จะซ่อนอัตโนมัติใน 1 วินาที) -->
         <div id="scanOverlay" class="absolute bottom-4 left-1/2 transform -translate-x-1/2 hidden w-11/12 max-w-md pointer-events-none z-20">
            <div id="scanResult" class="bg-emerald-600/95 text-white px-4 py-2.5 rounded-xl font-medium text-sm text-center shadow-lg border border-emerald-400 backdrop-blur-md">
               ✅ สแกนสำเร็จ
@@ -92,7 +75,6 @@
         </div>
       </div>
 
-      <!-- ปุ่มควบคุมกล้องด้านล่าง -->
       <div class="flex justify-center mt-4">
         <button id="btnToggleCam" onclick="toggleCamera()" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-semibold">
           ปิดกล้อง
@@ -122,14 +104,43 @@
 
     <!-- Page 4: Attendance -->
     <section id="page-attendance" class="page glass-card p-6 rounded-3xl hidden">
-      <h2 class="text-lg font-bold mb-4 text-amber-400">📊 ประวัติเข้างาน (สรุปต่อคน/วัน)</h2>
+      <h2 class="text-lg font-bold mb-4 text-amber-400">📊 ประวัติเข้างานทั้งหมด (สรุป 1 บรรทัด/คน/วัน)</h2>
       <div class="overflow-x-auto"><table class="w-full text-left text-sm" id="attendanceTable"></table></div>
     </section>
+
+    <!-- Page 5: Summary by Date & Shift -->
+    <section id="page-summary" class="page glass-card p-6 rounded-3xl hidden">
+      <h2 class="text-lg font-bold mb-4 text-rose-400">📈 สรุปรายงานประจำวัน (แยกตามกะ)</h2>
+      
+      <div class="mb-5 flex flex-col md:flex-row items-center gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+        <label class="text-sm text-slate-300 font-medium whitespace-nowrap">เลือกวันที่ต้องการดูสรุป:</label>
+        <input type="date" id="summaryDateFilter" onchange="loadSummaryShifts()" class="bg-slate-950 border border-slate-700 rounded-xl p-2 text-sm text-white w-full md:w-auto">
+      </div>
+
+      <!-- ส่วนแสดงรายชื่อกะในวันนั้น -->
+      <div id="summaryShiftContainer">
+        <p class="text-slate-400 text-sm text-center py-6">กรุณาเลือกวันที่ด้านบนเพื่อดูข้อมูลกะทำงาน</p>
+      </div>
+
+      <!-- ส่วนแสดงตารางรายละเอียดเมื่อกดเลือกกะ -->
+      <div id="summaryDetailContainer" class="mt-6 hidden">
+        <div class="flex items-center justify-between mb-3">
+          <h3 id="summaryDetailTitle" class="text-md font-bold text-amber-300">รายละเอียดกะ: -</h3>
+          <button onclick="backToSummaryShifts()" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs text-white">⬅️ กลับไปเลือกกะ</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm" id="summaryDetailTable"></table>
+        </div>
+      </div>
+    </section>
+
   </div>
 
   <script>
     let GAS_URL = localStorage.getItem("CUSTOM_GAS_URL") || "";
     let employeesData = [];
+    let attendancesRaw = [];
+    let shiftsData = [];
     let faceMatcher = null;
     let scanCooldown = false;
     let currentScanMode = "IN";
@@ -141,6 +152,15 @@
       document.getElementById(`page-${pageId}`).classList.remove('hidden');
       if (pageId !== 'scan') {
         stopCamera();
+      }
+      if (pageId === 'summary') {
+        // กำหนดค่าเริ่มต้นเป็นวันปัจจุบัน (YYYY-MM-DD)
+        const dateInput = document.getElementById('summaryDateFilter');
+        if (!dateInput.value) {
+          const today = new Date().toISOString().split('T')[0];
+          dateInput.value = today;
+        }
+        loadSummaryShifts();
       }
     }
 
@@ -181,17 +201,16 @@
         regWh.innerHTML = '<option value="">-- เลือกคลังสินค้า --</option>';
         (data.warehouses || []).forEach(wh => regWh.add(new Option(wh, wh)));
 
+        shiftsData = data.shifts || [];
         const scanShift = document.getElementById('scanShift');
-        scanShift.innerHTML = '<option value="">-- ไม่เลือก Shift --</option>';
-        (data.shifts || []).forEach(sh => scanShift.add(new Option(sh, sh)));
-
-        const scanOt = document.getElementById('scanOt');
-        scanOt.innerHTML = '<option value="">-- ไม่เลือก OT --</option>';
-        (data.ots || []).forEach(ot => scanOt.add(new Option(ot, ot)));
+        scanShift.innerHTML = '<option value="">-- กรุณาเลือกกะการทำงาน --</option>';
+        shiftsData.forEach(sh => scanShift.add(new Option(sh, sh)));
 
         employeesData = data.employees || [];
+        attendancesRaw = data.attendances || [];
+
         renderEmpTable();
-        renderAttTable(data.attendances || []);
+        renderAttTable(attendancesRaw);
 
         await initFaceAPI();
 
@@ -231,7 +250,7 @@
 
       if (labeledDescriptors.length > 0) {
         faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.50);
-        status.innerText = `✅ พร้อมสแกน (${labeledDescriptors.length} ใบหน้าในระบบ) - กรุณากล้องเปิดเพื่อเริ่ม`;
+        status.innerText = `✅ พร้อมสแกน (${labeledDescriptors.length} ใบหน้าในระบบ)`;
         status.classList.replace('text-amber-400', 'text-emerald-400');
       } else {
         status.innerText = "❌ ไม่พบรูปใบหน้าในระบบ กรุณาลงทะเบียนพนักงานก่อน";
@@ -322,11 +341,15 @@
     }
 
     async function handleAutoScanSuccess(emp) {
+      const shiftVal = document.getElementById('scanShift').value;
+      if (!shiftVal) {
+        alert("⚠️ กรุณาเลือกกะการทำงาน (Shift) ก่อนทำการสแกนหน้า!");
+        scanCooldown = false;
+        return;
+      }
+
       const overlay = document.getElementById('scanOverlay');
       const resultBox = document.getElementById('scanResult');
-      const shiftVal = document.getElementById('scanShift').value;
-      const otVal = document.getElementById('scanOt').value;
-
       const modeText = (currentScanMode === "IN") ? "ลงเวลาเข้างาน" : "ลงเวลาเลิกงาน";
 
       overlay.classList.remove('hidden');
@@ -336,23 +359,26 @@
 
       resultBox.innerHTML = `✅ ${modeText}สำเร็จ!<br><span class="text-xs text-slate-200">รหัส: ${emp.id} | ชื่อ: ${emp.name}</span>`;
 
-      // ส่งข้อมูลบันทึกเวลาไปที่ Google Sheets แบบเบื้องหลัง (Background) ไม่รอให้บล็อกการทำงานต่อ
-      safeFetchJson(GAS_URL, {
-        method: "POST",
-        body: JSON.stringify({
-          action: "recordAttendance",
-          data: { 
-            id: emp.id, 
-            name: emp.name, 
-            warehouse: emp.warehouse,
-            scanMode: currentScanMode,
-            shift: shiftVal,
-            ot: otVal
-          }
-        })
-      }).catch(e => console.error("บันทึกเวลาล้มเหลว", e));
+      try {
+        const res = await safeFetchJson(GAS_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "recordAttendance",
+            data: { 
+              id: emp.id, 
+              name: emp.name, 
+              warehouse: emp.warehouse,
+              scanMode: currentScanMode,
+              shift: shiftVal
+            }
+          })
+        });
+        if (res && res.attendances) {
+          attendancesRaw = res.attendances;
+          renderAttTable(attendancesRaw);
+        }
+      } catch(e) { console.error("บันทึกเวลาล้มเหลว", e); }
 
-      // กำหนดเวลา 1 วินาที (1000 มิลลิวินาที) ให้กล่องข้อความหายไป และพร้อมให้คนถัดไปสแกนต่อทันที
       setTimeout(() => {
         overlay.classList.add('hidden');
         scanCooldown = false;
@@ -436,54 +462,129 @@
     }
 
     function renderAttTable(logs) {
-      const grouped = {};
-      logs.forEach(l => {
-        const dateStr = l.time ? new Date(l.time).toLocaleDateString('th-TH') : '-';
-        const key = `${l.id}_${dateStr}`;
-        if (!grouped[key]) {
-          grouped[key] = {
-            date: dateStr,
-            id: l.id,
-            name: l.name,
-            ot: '-',
-            times: []
-          };
-        }
-        if (l.timeIn && l.timeIn !== '-') grouped[key].times.push(formatTimeString(l.timeIn));
-        if (l.timeOut && l.timeOut !== '-') grouped[key].times.push(formatTimeString(l.timeOut));
-        if (!l.timeIn && !l.timeOut && l.time) {
-          grouped[key].times.push(new Date(l.time).toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false }));
-        }
-        if (l.ot && l.ot !== '-') grouped[key].ot = l.ot;
-      });
-
-      const rows = Object.values(grouped).map(g => {
-        let validTimes = [...new Set(g.times)].filter(v => v && v !== '-');
-        validTimes.sort(); 
-        
-        let timeIn = validTimes.length > 0 ? validTimes[0] : '-';
-        let timeOut = validTimes.length > 1 ? validTimes[validTimes.length - 1] : '-';
-
-        return `
-          <tr class="border-b border-slate-700">
-            <td class="p-2 text-xs text-slate-400">${g.date}</td>
-            <td class="p-2 text-emerald-400 font-mono">${g.id}</td>
-            <td class="p-2">${g.name}</td>
-            <td class="p-2 text-slate-300">${timeIn}</td>
-            <td class="p-2 text-slate-300">${timeOut}</td>
-            <td class="p-2 text-slate-400">${g.ot}</td>
-          </tr>`;
-      }).join('');
+      const rows = (logs || []).map(l => `
+        <tr class="border-b border-slate-700">
+          <td class="p-2 text-xs text-slate-400">${l.date || '-'}</td>
+          <td class="p-2 text-emerald-400 font-mono">${l.id || '-'}</td>
+          <td class="p-2">${l.name || '-'}</td>
+          <td class="p-2 text-blue-300">${l.shift || '-'}</td>
+          <td class="p-2 text-slate-300">${formatTimeString(l.timeIn)}</td>
+          <td class="p-2 text-slate-300">${formatTimeString(l.timeOut)}</td>
+          <td class="p-2 text-amber-400 font-semibold">${l.ot && l.ot !== '-' ? l.ot : '-'}</td>
+        </tr>`).join('');
 
       document.getElementById('attendanceTable').innerHTML = 
         `<tr>
            <th class="p-2 text-slate-400">วันที่</th>
            <th class="p-2 text-slate-400">รหัส</th>
            <th class="p-2 text-slate-400">ชื่อ</th>
-           <th class="p-2 text-slate-400">Time in (เร็วที่สุด)</th>
-           <th class="p-2 text-slate-400">Time out (ช้าที่สุด)</th>
+           <th class="p-2 text-slate-400">กะ (Shift)</th>
+           <th class="p-2 text-slate-400">Time in</th>
+           <th class="p-2 text-slate-400">Time out</th>
            <th class="p-2 text-slate-400">OT</th>
          </tr>` + rows;
+    }
+
+    // ฟังก์ชันสำหรับหน้า 5: สรุปรายงานประจำวัน
+    function loadSummaryShifts() {
+      const selectedDate = document.getElementById('summaryDateFilter').value;
+      const container = document.getElementById('summaryShiftContainer');
+      document.getElementById('summaryDetailContainer').classList.add('hidden');
+
+      if (!selectedDate) {
+        container.innerHTML = '<p class="text-slate-400 text-sm text-center py-6">กรุณาเลือกวันที่</p>';
+        return;
+      }
+
+      // กรองข้อมูลเฉพาะวันที่เลือก (เทียบ YYYY-MM-DD จากฟอร์แมตในระบบ)
+      const targetLogs = attendancesRaw.filter(l => {
+        if (!l.date) return false;
+        // แปลง l.date เป็น YYYY-MM-DD สำหรับเทียบค่า
+        let dFormatted = l.date;
+        if (l.date.includes('/')) {
+          const parts = l.date.split('/');
+          if (parts.length === 3) {
+            // สมมติ DD/MM/YYYY
+            let y = parts[2];
+            if(parseInt(y) > 2500) y = parseInt(y) - 543; // แปลงพ.ศ. เป็น ค.ศ.
+            dFormatted = `${y}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+          }
+        }
+        return dFormatted === selectedDate || l.date === selectedDate;
+      });
+
+      // จัดกลุ่มตามกะ (Shift)
+      const shiftCounts = {};
+      targetLogs.forEach(l => {
+        const sh = l.shift && l.shift !== '-' ? l.shift : 'ไม่ระบุุุกะ';
+        if (!shiftCounts[sh]) shiftCounts[sh] = 0;
+        shiftCounts[sh]++;
+      });
+
+      if (Object.keys(shiftCounts).length === 0) {
+        container.innerHTML = `<p class="text-slate-400 text-sm text-center py-6">📅 ไม่พบข้อมูลการสแกนในวันที่ ${selectedDate}</p>`;
+        return;
+      }
+
+      let html = `<p class="text-xs text-slate-400 mb-3">คลิกที่กะด้านล่างเพื่อดูรายชื่อพนักงานและเวลาเข้า-ออก:</p><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">`;
+      for (const [shiftName, count] of Object.entries(shiftCounts)) {
+        html += `
+          <div onclick="showShiftDetail('${selectedDate}', '${shiftName}')" class="bg-slate-900 border border-slate-700 hover:border-rose-500 cursor-pointer p-4 rounded-2xl transition flex items-center justify-between shadow-md">
+            <div>
+              <h4 class="font-bold text-white text-base">${shiftName}</h4>
+              <p class="text-xs text-slate-400 mt-1">จำนวนพนักงาน</p>
+            </div>
+            <span class="bg-rose-600/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-xl font-bold text-lg">${count} คน</span>
+          </div>`;
+      }
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    function showShiftDetail(dateStr, shiftName) {
+      document.getElementById('summaryShiftContainer').classList.add('hidden');
+      const detailContainer = document.getElementById('summaryDetailContainer');
+      detailContainer.classList.remove('hidden');
+
+      document.getElementById('summaryDetailTitle').innerText = `กะ: ${shiftName} (วันที่: ${dateStr})`;
+
+      const targetLogs = attendancesRaw.filter(l => {
+        let dFormatted = l.date;
+        if (l.date && l.date.includes('/')) {
+          const parts = l.date.split('/');
+          if (parts.length === 3) {
+            let y = parts[2];
+            if(parseInt(y) > 2500) y = parseInt(y) - 543;
+            dFormatted = `${y}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+          }
+        }
+        const matchDate = (dFormatted === dateStr || l.date === dateStr);
+        const matchShift = (l.shift === shiftName) || (shiftName === 'ไม่ระบุุุกะ' && (!l.shift || l.shift === '-'));
+        return matchDate && matchShift;
+      });
+
+      const rows = targetLogs.map(l => `
+        <tr class="border-b border-slate-700">
+          <td class="p-2 text-emerald-400 font-mono">${l.id || '-'}</td>
+          <td class="p-2">${l.name || '-'}</td>
+          <td class="p-2 text-slate-300">${formatTimeString(l.timeIn)}</td>
+          <td class="p-2 text-slate-300">${formatTimeString(l.timeOut)}</td>
+          <td class="p-2 text-amber-400 font-semibold">${l.ot && l.ot !== '-' ? l.ot : '-'}</td>
+        </tr>`).join('');
+
+      document.getElementById('summaryDetailTable').innerHTML = 
+        `<tr>
+           <th class="p-2 text-slate-400">รหัส</th>
+           <th class="p-2 text-slate-400">ชื่อ</th>
+           <th class="p-2 text-slate-400">Time in</th>
+           <th class="p-2 text-slate-400">Time out</th>
+           <th class="p-2 text-slate-400">OT</th>
+         </tr>` + (rows || `<tr><td colspan="5" class="text-center p-4 text-slate-400">ไม่พบข้อมูล</td></tr>`);
+    }
+
+    function backToSummaryShifts() {
+      document.getElementById('summaryDetailContainer').classList.add('hidden');
+      document.getElementById('summaryShiftContainer').classList.remove('hidden');
     }
 
     document.addEventListener("DOMContentLoaded", () => {
