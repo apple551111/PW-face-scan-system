@@ -124,9 +124,12 @@
       </div>
 
       <div id="summaryDetailContainer" class="mt-6 hidden">
-        <div class="flex items-center justify-between mb-3 bg-slate-900/40 p-3 rounded-xl border border-slate-800">
+        <div class="flex flex-wrap items-center justify-between gap-2 mb-3 bg-slate-900/40 p-3 rounded-xl border border-slate-800">
           <h3 id="summaryDetailTitle" class="text-sm md:text-md font-bold text-amber-300">รายละเอียดกะ: -</h3>
-          <button onclick="backToSummaryShifts()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs text-white transition-all shadow">⬅️ กลับไปหน้าสรุป</button>
+          <div class="flex items-center gap-2">
+            <button onclick="downloadCurrentShiftCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-semibold text-white transition-all shadow flex items-center gap-1">📥 ดาวน์โหลดรายชื่อ</button>
+            <button onclick="backToSummaryShifts()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs text-white transition-all shadow">⬅️ กลับไปหน้าสรุป</button>
+          </div>
         </div>
         <div class="overflow-x-auto">
           <table class="w-full text-left text-sm" id="summaryDetailTable"></table>
@@ -148,6 +151,11 @@
     let isCameraActive = false;
     let mediaStream = null;
 
+    // ตัวแปรเก็บสถานะหน้าแสดงรายละเอียดปัจจุบัน สำหรับใช้ดาวน์โหลด
+    let currentActiveShift = "";
+    let currentActiveWarehouse = "";
+    let currentActiveDateStr = "";
+
     function showPage(pageId) {
       document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
       document.getElementById(`page-${pageId}`).classList.remove('hidden');
@@ -159,7 +167,6 @@
           dateInput.value = today;
         }
         
-        // เติมตัวเลือกคลังในหน้าสรุป
         const sumWh = document.getElementById('summaryWarehouseFilter');
         const currentSelectedWh = sumWh.value;
         sumWh.innerHTML = '<option value="">-- ทุกคลังสินค้า --</option>';
@@ -567,7 +574,6 @@
       document.getElementById('summaryDetailContainer').classList.add('hidden');
       container.classList.remove('hidden');
 
-      // กรองข้อมูลตามวันที่ และคลังสินค้า (ถ้าเลือก)
       let matchedLogs = attendancesRaw.filter(l => l.date === targetDateStr);
       if (warehouseFilterVal) {
         matchedLogs = matchedLogs.filter(l => l.warehouse === warehouseFilterVal);
@@ -578,12 +584,11 @@
         return;
       }
 
-      // จัดกลุ่มตาม กะ (Shift) และ คลังสินค้า (Warehouse)
       const shiftGroups = {};
       matchedLogs.forEach(l => {
         const sh = l.shift || "ไม่ระบุุุกะ";
         const wh = l.warehouse || "ไม่ระบุคลัง";
-        const groupKey = `${sh}___${wh}`; // แยกคีย์ตามกะและคลังให้ชัดเจน
+        const groupKey = `${sh}___${wh}`;
         if (!shiftGroups[groupKey]) {
           shiftGroups[groupKey] = { shift: sh, warehouse: wh, logs: [] };
         }
@@ -611,6 +616,10 @@
     }
 
     function viewShiftDetail(shiftName, warehouseName, dateStr) {
+      currentActiveShift = shiftName;
+      currentActiveWarehouse = warehouseName;
+      currentActiveDateStr = dateStr;
+
       document.getElementById('summaryShiftContainer').classList.add('hidden');
       document.getElementById('summaryDetailContainer').classList.remove('hidden');
       document.getElementById('summaryDetailTitle').innerText = `🏢 คลัง: ${warehouseName} | กะ: ${shiftName} (${dateStr})`;
@@ -638,6 +647,41 @@
           <th class="p-2 text-slate-400">Time out</th>
           <th class="p-2 text-slate-400">OT</th>
         </tr>` + rows;
+    }
+
+    function downloadCurrentShiftCSV() {
+      const matchedLogs = attendancesRaw.filter(l => l.date === currentActiveDateStr && l.shift === currentActiveShift && l.warehouse === currentActiveWarehouse);
+      if (matchedLogs.length === 0) {
+        alert("ไม่พบข้อมูลสำหรับดาวน์โหลด");
+        return;
+      }
+
+      let csvContent = "\uFEFF"; // BOM สำหรับรองรับภาษาไทยใน Excel
+      csvContent += "ลำดับ,รหัสพนักงาน,ชื่อ-นามสกุล,คลังสินค้า,กะการทำงาน,เวลาเข้างาน,เวลาเลิกงาน,OT\n";
+
+      matchedLogs.forEach((l, idx) => {
+        const row = [
+          idx + 1,
+          `"${l.id || ''}"`,
+          `"${l.name || ''}"`,
+          `"${l.warehouse || ''}"`,
+          `"${l.shift || ''}"`,
+          `"${formatTimeString(l.timeIn)}"`,
+          `"${formatTimeString(l.timeOut)}"`,
+          `"${l.ot && l.ot !== '-' ? l.ot : '-'}"`
+        ];
+        csvContent += row.join(",") + "\n";
+      });
+
+      const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `สรุปรายชื่อ_${currentActiveWarehouse}_กะ_${currentActiveShift}_${currentActiveDateStr.replace(/\//g, '-')}.csv`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
     }
 
     function backToSummaryShifts() {
