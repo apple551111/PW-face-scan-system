@@ -24,7 +24,7 @@
 
     <div class="glass-card p-3 rounded-2xl mb-4 flex items-center gap-3">
       <label class="whitespace-nowrap text-xs text-slate-300">🔗 Web App URL:</label>
-      <input type="text" id="gasUrlInput" readonly class="w-full bg-slate-900 border border-slate-700 rounded-xl p-1.5 text-xs text-white opacity-80 cursor-not-allowed" title="ดึงลิงก์จากชีทอัตโนมัติ">
+      <input type="text" id="gasUrlInput" readonly class="w-full bg-slate-900 border border-slate-700 rounded-xl p-1.5 text-xs text-white opacity-80 cursor-not-allowed">
       <button onclick="initData()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs text-white whitespace-nowrap">รีเฟรช</button>
     </div>
 
@@ -39,53 +39,39 @@
     <!-- Page 1: Scan -->
     <section id="page-scan" class="page glass-card p-4 rounded-3xl">
       <div class="grid grid-cols-2 gap-3 mb-4">
-        <button id="btnModeIn" onclick="setScanMode('IN')" class="py-3 rounded-2xl bg-emerald-600 text-white font-bold text-base mode-btn-active flex items-center justify-center gap-2">
-          ☀️ เข้างาน
-        </button>
-        <button id="btnModeOut" onclick="setScanMode('OUT')" class="py-3 rounded-2xl bg-rose-600 text-white font-bold text-base opacity-60 flex items-center justify-center gap-2">
-          🌙 เลิกงาน
-        </button>
+        <button id="btnModeIn" onclick="setScanMode('IN')" class="py-3 rounded-2xl bg-emerald-600 text-white font-bold text-base mode-btn-active flex items-center justify-center gap-2">☀️ เข้างาน</button>
+        <button id="btnModeOut" onclick="setScanMode('OUT')" class="py-3 rounded-2xl bg-rose-600 text-white font-bold text-base opacity-60 flex items-center justify-center gap-2">🌙 เลิกงาน</button>
       </div>
 
       <div class="mb-3">
         <label class="block text-xs text-slate-400 mb-1">🏢 เลือกคลังสินค้า (Warehouse) *:</label>
         <select id="scanWarehouse" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500">
-          <option value="">-- กำลังโหลดคลังสินค้า --</option>
+          <option value="">-- กรุณาเลือกคลังสินค้า --</option>
         </select>
       </div>
 
       <div class="mb-4">
         <label class="block text-xs text-slate-400 mb-1">⏳ เลือกกะการทำงาน (Shift) *จำเป็นสำหรับคำนวณ OT:</label>
         <select id="scanShift" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500">
-          <option value="">-- กำลังโหลด Shift --</option>
+          <option value="">-- กรุณาเลือก Shift --</option>
         </select>
       </div>
 
-      <div id="modelLoadingStatus" class="text-amber-400 mb-2 text-center text-xs font-semibold">
-        ⏳ กำลังโหลด AI Model...
-      </div>
+      <div id="modelLoadingStatus" class="text-amber-400 mb-2 text-center text-xs font-semibold">⏳ กำลังโหลด AI Model...</div>
 
       <div class="camera-container relative bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col justify-center items-center">
         <div id="cameraPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-10">
           <p class="text-slate-400 mb-3 text-sm">กล้องถูกปิดอยู่</p>
-          <button onclick="toggleCamera()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm shadow-lg">
-            📷 เปิดกล้องสแกน
-          </button>
+          <button onclick="toggleCamera()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm shadow-lg">📷 เปิดกล้องสแกน</button>
         </div>
-
         <video id="video" autoplay muted playsinline class="w-full h-full object-cover"></video>
-        
         <div id="scanOverlay" class="absolute bottom-4 left-1/2 -translate-x-1/2 hidden w-11/12 max-w-md pointer-events-none z-20">
-           <div id="scanResult" class="bg-emerald-600/95 text-white px-4 py-2.5 rounded-xl font-medium text-sm text-center shadow-lg border border-emerald-400 backdrop-blur-md">
-             ✅ สแกนสำเร็จ
-           </div>
+           <div id="scanResult" class="bg-emerald-600/95 text-white px-4 py-2.5 rounded-xl font-medium text-sm text-center shadow-lg border border-emerald-400 backdrop-blur-md">✅ สแกนสำเร็จ</div>
         </div>
       </div>
 
       <div class="flex justify-center mt-4">
-        <button id="btnToggleCam" onclick="toggleCamera()" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-semibold">
-          เปิดกล้อง
-        </button>
+        <button id="btnToggleCam" onclick="toggleCamera()" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-semibold">เปิดกล้อง</button>
       </div>
     </section>
 
@@ -192,7 +178,6 @@
     }
 
     async function initData() {
-      // ดึง URL ปัจจุบันของหน้าเว็บที่เปิดใช้งานเพื่อติดต่อ Apps Script อัตโนมัติ
       GAS_URL = window.location.href.split('?')[0];
       
       try {
@@ -216,7 +201,7 @@
 
         shiftsData = data.shifts || [];
         const scanShift = document.getElementById('scanShift');
-        scanShift.innerHTML = '<option value="">-- กรุณาเลือกกะการทำงาน --</option>';
+        scanShift.innerHTML = '<option value="">-- กรุณาเลือก Shift --</option>';
         shiftsData.forEach(sh => scanShift.add(new Option(sh, sh)));
 
         employeesData = data.employees || [];
@@ -228,7 +213,6 @@
         await initFaceAPI();
 
       } catch (err) {
-        // กรณีเปิดผ่าน Local file หรือ Test ให้ลองดึงผ่าน Script URL ที่บันทึกไว้ใน LocalStorage แทน
         let savedUrl = localStorage.getItem("CUSTOM_GAS_URL");
         if (savedUrl && !GAS_URL.includes("script.google.com")) {
           GAS_URL = savedUrl;
@@ -246,7 +230,7 @@
 
             shiftsData = data2.shifts || [];
             const scanShift = document.getElementById('scanShift');
-            scanShift.innerHTML = '<option value="">-- กรุณาเลือกกะการทำงาน --</option>';
+            scanShift.innerHTML = '<option value="">-- กรุณาเลือก Shift --</option>';
             shiftsData.forEach(sh => scanShift.add(new Option(sh, sh)));
 
             employeesData = data2.employees || [];
@@ -257,14 +241,14 @@
             return;
           } catch(e) {}
         }
-        alert("โหลดข้อมูลล้มเหลว: " + err.message + "\n(โปรดตรวจสอบว่าทำการ Deploy เป็น Web App เรียบร้อยแล้ว)");
+        alert("โหลดข้อมูลล้มเหลว: " + err.message);
       }
     }
 
     async function initFaceAPI() {
       const status = document.getElementById('modelLoadingStatus');
       if (typeof faceapi === 'undefined') {
-        status.innerText = "❌ ไม่สามารถโหลดระบบตรวจจับใบหน้าได้ (โปรดตรวจสอบอินเทอร์เน็ต)";
+        status.innerText = "❌ ไม่สามารถโหลดระบบตรวจจับใบหน้าได้";
         status.className = "text-red-400 mb-2 text-center text-xs font-semibold";
         return;
       }
@@ -292,7 +276,7 @@
             if (detection) {
               labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(String(emp.id), [detection.descriptor]));
             }
-          } catch(e) { console.warn("ข้ามรูป ID:", emp.id, e); }
+          } catch(e) {}
         }
 
         if (labeledDescriptors.length > 0) {
@@ -300,7 +284,7 @@
           status.innerText = `✅ พร้อมสแกน (${labeledDescriptors.length} ใบหน้าในระบบ)`;
           status.className = "text-emerald-400 mb-2 text-center text-xs font-semibold";
         } else {
-          status.innerText = "❌ ไม่พบรูปใบหน้าพนักงานในระบบ กรุณาลงทะเบียนพนักงานก่อน";
+          status.innerText = "❌ ไม่พบรูปใบหน้าพนักงานในระบบ";
           status.className = "text-red-400 mb-2 text-center text-xs font-semibold";
         }
       } catch (err) {
@@ -340,7 +324,7 @@
         btnToggle.innerText = "ปิดกล้อง";
         btnToggle.className = "px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-sm font-semibold";
         isCameraActive = true;
-      } catch(err) { alert("ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบสิทธิ์การใช้งานกล้องในเบราว์เซอร์"); }
+      } catch(err) { alert("ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบสิทธิ์การใช้งานกล้อง"); }
     }
 
     function stopCamera() {
@@ -374,7 +358,6 @@
           
           if (detection) {
             const match = faceMatcher.findBestMatch(detection.descriptor);
-            
             if (match.label !== 'unknown') {
               scanCooldown = true;
               const emp = employeesData.find(e => String(e.id) === String(match.label));
@@ -382,9 +365,8 @@
               else scanCooldown = false;
             }
           }
-        } catch(err) { console.error("Scan loop error:", err); }
+        } catch(err) {}
       }
-      
       if (isCameraActive) setTimeout(() => requestAnimationFrame(scanLoop), 200);
     }
 
@@ -415,7 +397,7 @@
       resultBox.innerHTML = `✅ ${modeText}สำเร็จ!<br><span class="text-xs text-slate-200">รหัส: ${emp.id} | ชื่อ: ${emp.name} | คลัง: ${warehouseVal}</span>`;
 
       try {
-        const res = await safeFetchJson(GAS_URL, {
+        await safeFetchJson(GAS_URL, {
           method: "POST",
           body: JSON.stringify({
             action: "recordAttendance",
@@ -429,13 +411,12 @@
           })
         });
 
-        // รีเฟรชประวัติหลังบันทึก
         const refreshData = await safeFetchJson(`${GAS_URL}?action=getInitialData`);
         if (refreshData && refreshData.attendances) {
           attendancesRaw = refreshData.attendances;
           renderAttTable(attendancesRaw);
         }
-      } catch(e) { console.error("บันทึกเวลาล้มเหลว", e); }
+      } catch(e) {}
 
       setTimeout(() => {
         overlay.classList.add('hidden');
@@ -488,7 +469,7 @@
           document.getElementById('registerForm').reset();
           initData();
           showPage('scan');
-        } else { alert(res.message || "เกิดข้อผิดพลาดในการบันทึก"); }
+        } else { alert(res.message || "เกิดข้อผิดพลาด"); }
       } catch (err) { alert(err.message); }
       finally { btn.disabled = false; btn.innerText = "บันทึกข้อมูล"; }
     }
@@ -548,6 +529,93 @@
            <th class="p-2 text-slate-400">Time out</th>
            <th class="p-2 text-slate-400">OT</th>
          </tr>` + rows;
+    }
+
+    // --- ฟังก์ชันสำหรับหน้า 5: สรุปรายงานประจำวัน (แยกตามกะ) ---
+    function convertDateToDDMMYYYY(isoDateStr) {
+      if (!isoDateStr) return "";
+      const parts = isoDateStr.split("-");
+      if (parts.length === 3) {
+        return `${parts[2]}/${parts[1]}/${parts[0]}`;
+      }
+      return isoDateStr;
+    }
+
+    function loadSummaryShifts() {
+      const dateVal = document.getElementById('summaryDateFilter').value; // รูปแบบ YYYY-MM-DD
+      const targetDateStr = convertDateToDDMMYYYY(dateVal); // แปลงเป็น DD/MM/YYYY ให้ตรงกับข้อมูลชีท
+      
+      const container = document.getElementById('summaryShiftContainer');
+      document.getElementById('summaryDetailContainer').classList.add('hidden');
+      container.classList.remove('hidden');
+
+      // กรองข้อมูลเฉพาะวันที่เลือก
+      const matchedLogs = attendancesRaw.filter(l => l.date === targetDateStr);
+
+      if (matchedLogs.length === 0) {
+        container.innerHTML = `<p class="text-slate-400 text-sm text-center py-6">ไม่พบข้อมูลการลงเวลาในวันที่ ${targetDateStr}</p>`;
+        return;
+      }
+
+      // จัดกลุ่มตามกะ (Shift)
+      const shiftGroups = {};
+      matchedLogs.forEach(l => {
+        const sh = l.shift || "ไม่ระบุุุุกะ";
+        if (!shiftGroups[sh]) shiftGroups[sh] = [];
+        shiftGroups[sh].push(l);
+      });
+
+      let html = `<div class="grid grid-cols-1 md:grid-cols-2 gap-4">`;
+      for (const [shiftName, logs] of Object.entries(shiftGroups)) {
+        html += `
+          <div class="bg-slate-900 border border-slate-700/80 rounded-2xl p-4 flex items-center justify-between shadow-md">
+            <div>
+              <span class="text-xs text-slate-400 block mb-1">กะการทำงาน</span>
+              <h3 class="text-md font-bold text-cyan-300">${shiftName}</h3>
+              <p class="text-xs text-slate-300 mt-2">จำนวนพนักงาน: <span class="text-emerald-400 font-bold">${logs.length}</span> คน</p>
+            </div>
+            <button onclick="viewShiftDetail('${shiftName}', '${targetDateStr}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-semibold text-white transition-all shadow">
+              ดูรายชื่อพนักงาน ➡️
+            </button>
+          </div>`;
+      }
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    function viewShiftDetail(shiftName, dateStr) {
+      document.getElementById('summaryShiftContainer').classList.add('hidden');
+      document.getElementById('summaryDetailContainer').classList.remove('hidden');
+      document.getElementById('summaryDetailTitle').innerText = `กะ: ${shiftName} (วันที่: ${dateStr})`;
+
+      const matchedLogs = attendancesRaw.filter(l => l.date === dateStr && l.shift === shiftName);
+
+      const rows = matchedLogs.map((l, idx) => `
+        <tr class="border-b border-slate-700 hover:bg-slate-800">
+          <td class="p-2 text-slate-400 text-center">${idx + 1}</td>
+          <td class="p-2 text-emerald-400 font-mono">${l.id || '-'}</td>
+          <td class="p-2 font-medium">${l.name || '-'}</td>
+          <td class="p-2 text-cyan-300">${l.warehouse || '-'}</td>
+          <td class="p-2 text-slate-300">${formatTimeString(l.timeIn)}</td>
+          <td class="p-2 text-slate-300">${formatTimeString(l.timeOut)}</td>
+          <td class="p-2 text-amber-400 font-semibold">${l.ot && l.ot !== '-' ? l.ot : '-'}</td>
+        </tr>`).join('');
+
+      document.getElementById('summaryDetailTable').innerHTML = `
+        <tr>
+          <th class="p-2 text-slate-400 text-center w-12">#</th>
+          <th class="p-2 text-slate-400">รหัส</th>
+          <th class="p-2 text-slate-400">ชื่อ</th>
+          <th class="p-2 text-slate-400">คลัง</th>
+          <th class="p-2 text-slate-400">Time in</th>
+          <th class="p-2 text-slate-400">Time out</th>
+          <th class="p-2 text-slate-400">OT</th>
+        </tr>` + rows;
+    }
+
+    function backToSummaryShifts() {
+      document.getElementById('summaryDetailContainer').classList.add('hidden');
+      document.getElementById('summaryShiftContainer').classList.remove('hidden');
     }
   </script>
 </body>
