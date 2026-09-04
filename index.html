@@ -2,160 +2,641 @@
 <html lang="th">
 <head>
   <meta charset="UTF-8">
-  <title>ระบบบันทึกเวลาสแกนใบหน้า</title>
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500&display=swap" rel="stylesheet">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ระบบสแกนใบหน้าพนักงาน</title>
+  <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
   <style>
     body { font-family: 'Kanit', sans-serif; background-color: #0f172a; color: #f8fafc; }
-    .card { background-color: #1e293b; border: none; border-radius: 12px; }
-    .nav-pills .nav-link { color: #94a3b8; border-radius: 8px; margin: 0 5px; }
-    .nav-pills .nav-link.active { background-color: #334155; color: #fff; font-weight: 500; }
-    .table { color: #cbd5e1; }
-    .table thead th { border-bottom: 2px solid #334155; color: #94a3b8; font-weight: 500; }
-    .table td { border-bottom: 1px solid #334155; vertical-align: middle; }
-    .text-green { color: #4ade80; font-weight: 500; }
-    .text-yellow { color: #fbbf24; font-weight: 500; }
-    .btn-primary { background-color: #2563eb; border: none; }
-    .btn-danger { background-color: #dc2626; border: none; }
+    .glass-card { background: rgba(30, 41, 59, 0.7); backdrop-filter: blur(12px); border: 1px solid rgba(255, 255, 255, 0.1); }
+    .btn-big { min-height: 3rem; font-size: 0.95rem; font-weight: 600; transition: all 0.2s ease-in-out; }
+    .btn-big:active { transform: scale(0.97); }
+    .mode-btn-active { border: 2px solid #38bdf8; box-shadow: 0 0 15px rgba(56, 189, 248, 0.5); }
+    .camera-container { width: 100%; max-width: 400px; aspect-ratio: 3 / 4; margin: 0 auto; }
   </style>
 </head>
-<body class="p-4">
+<body class="min-h-screen pb-10">
+  <div class="max-w-5xl mx-auto px-4 pt-4">
+    <header class="text-center mb-4">
+      <h1 class="text-2xl font-bold text-white">ระบบบันทึกเวลาสแกนใบหน้า</h1>
+    </header>
 
-  <div class="container max-w-4xl mx-auto mt-4">
-    <h3 class="text-center mb-4 fw-bold">ระบบบันทึกเวลา</h3>
-    
-    <!-- Tabs -->
-    <ul class="nav nav-pills justify-content-center mb-4" id="mainTab" role="tablist">
-      <li class="nav-item"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#scan">1. สแกนเข้า-ออก</button></li>
-      <li class="nav-item"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#history" onclick="loadData()">2. ประวัติการทำงาน</button></li>
-    </ul>
-
-    <div class="tab-content">
-      
-      <!-- หน้าสแกน -->
-      <div class="tab-pane fade show active card p-4 shadow" id="scan">
-        <h5 class="mb-4">📋 บันทึกเวลาเข้า-ออกงาน</h5>
-        <div class="mb-3">
-          <label class="form-label">รหัสพนักงาน</label>
-          <input type="text" id="empId" class="form-control bg-dark text-light border-secondary" placeholder="ระบุรหัสพนักงาน...">
-        </div>
-        <div class="mb-3">
-          <label class="form-label">กะการทำงาน (Shift)</label>
-          <select id="empShift" class="form-select bg-dark text-light border-secondary"></select>
-        </div>
-        <div class="d-flex gap-3 mt-4">
-          <button class="btn btn-primary flex-grow-1 py-2" onclick="submitScan('IN')">สแกนเข้างาน (Time IN)</button>
-          <button class="btn btn-danger flex-grow-1 py-2" onclick="submitScan('OUT')">สแกนออกงาน (Time OUT)</button>
-        </div>
-        <div id="statusMsg" class="mt-3 text-center fw-bold"></div>
-      </div>
-
-      <!-- หน้าประวัติ -->
-      <div class="tab-pane fade card p-4 shadow" id="history">
-        <h5 class="mb-4">📊 ประวัติเข้างานทั้งหมด (สรุป 1 บรรทัด/คน/วัน)</h5>
-        <div class="table-responsive">
-          <table class="table table-borderless">
-            <thead>
-              <tr>
-                <th>วันที่</th>
-                <th>รหัส</th>
-                <th>ชื่อ</th>
-                <th>กะ (Shift)</th>
-                <th>Time in</th>
-                <th>Time out</th>
-                <th>OT</th>
-              </tr>
-            </thead>
-            <tbody id="historyTableBody">
-              <tr><td colspan="7" class="text-center text-muted">กำลังโหลดข้อมูล...</td></tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-
+    <div class="glass-card p-3 rounded-2xl mb-4 flex items-center gap-3">
+      <label class="whitespace-nowrap text-xs text-slate-300">🔗 Web App URL:</label>
+      <input type="text" id="gasUrlInput" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-1.5 text-xs text-white">
+      <button onclick="saveGasUrl()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs text-white whitespace-nowrap">โหลดข้อมูล</button>
     </div>
+
+    <nav class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
+      <button onclick="showPage('scan')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-emerald-400">1. สแกนหน้า</button>
+      <button onclick="showPage('register')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-blue-400">2. ลงทะเบียน</button>
+      <button onclick="showPage('manage')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-purple-400">3. พนักงาน</button>
+      <button onclick="showPage('attendance')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-amber-400">4. ประวัติ</button>
+      <button onclick="showPage('summary')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-rose-400 col-span-2 md:col-span-1">5. สรุปรายกะ</button>
+    </nav>
+
+    <!-- Page 1: Scan -->
+    <section id="page-scan" class="page glass-card p-4 rounded-3xl">
+      <div class="grid grid-cols-2 gap-3 mb-4">
+        <button id="btnModeIn" onclick="setScanMode('IN')" class="py-3 rounded-2xl bg-emerald-600 text-white font-bold text-base mode-btn-active flex items-center justify-center gap-2">
+          ☀️ เข้างาน
+        </button>
+        <button id="btnModeOut" onclick="setScanMode('OUT')" class="py-3 rounded-2xl bg-rose-600 text-white font-bold text-base opacity-60 flex items-center justify-center gap-2">
+          🌙 เลิกงาน
+        </button>
+      </div>
+
+      <div class="mb-4">
+        <label class="block text-xs text-slate-400 mb-1">เลือกกะการทำงาน (Shift) *จำเป็นต้องเลือกเพื่อคำนวณ OT:</label>
+        <select id="scanShift" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500">
+          <option value="">-- กำลังโหลด Shift --</option>
+        </select>
+      </div>
+
+      <div id="modelLoadingStatus" class="text-amber-400 mb-2 text-center text-xs font-semibold">
+        ⏳ กำลังโหลด AI Model...
+      </div>
+
+      <div class="camera-container relative bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col justify-center items-center">
+        <div id="cameraPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-10">
+          <p class="text-slate-400 mb-3 text-sm">กล้องถูกปิดอยู่</p>
+          <button onclick="toggleCamera()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm shadow-lg">
+            📷 เปิดกล้องสแกน
+          </button>
+        </div>
+
+        <video id="video" autoplay muted playsinline class="w-full h-full object-cover"></video>
+        
+        <div id="scanOverlay" class="absolute bottom-4 left-1/2 -translate-x-1/2 hidden w-11/12 max-w-md pointer-events-none z-20">
+           <div id="scanResult" class="bg-emerald-600/95 text-white px-4 py-2.5 rounded-xl font-medium text-sm text-center shadow-lg border border-emerald-400 backdrop-blur-md">
+             ✅ สแกนสำเร็จ
+           </div>
+        </div>
+      </div>
+
+      <div class="flex justify-center mt-4">
+        <button id="btnToggleCam" onclick="toggleCamera()" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-semibold">
+          เปิดกล้อง
+        </button>
+      </div>
+    </section>
+
+    <!-- Page 2: Register -->
+    <section id="page-register" class="page glass-card p-6 rounded-3xl hidden">
+      <h2 class="text-lg font-bold mb-4 text-blue-400">📝 ลงทะเบียนพนักงาน</h2>
+      <form id="registerForm" class="space-y-4" onsubmit="handleRegister(event)">
+        <input type="text" id="regId" placeholder="รหัสพนักงาน" required class="w-full bg-slate-900 rounded-xl p-3 text-sm text-white border border-slate-700">
+        <input type="text" id="regName" placeholder="ชื่อ-นามสกุล" required class="w-full bg-slate-900 rounded-xl p-3 text-sm text-white border border-slate-700">
+        <select id="regWarehouse" required class="w-full bg-slate-900 rounded-xl p-3 text-sm text-white border border-slate-700">
+          <option value="">-- เลือกคลังสินค้า --</option>
+        </select>
+        <input type="file" id="regPhoto" accept="image/*" required class="w-full bg-slate-900 rounded-xl p-2 text-sm text-slate-400 border border-slate-700">
+        <button type="submit" id="btnSubmitReg" class="w-full bg-blue-600 hover:bg-blue-500 p-3 rounded-xl font-bold text-sm text-white">บันทึกข้อมูล</button>
+      </form>
+    </section>
+
+    <!-- Page 3: Manage -->
+    <section id="page-manage" class="page glass-card p-6 rounded-3xl hidden">
+      <h2 class="text-lg font-bold mb-4 text-purple-400">👥 รายชื่อพนักงาน</h2>
+      <div class="overflow-x-auto"><table class="w-full text-left text-sm" id="employeeTable"></table></div>
+    </section>
+
+    <!-- Page 4: Attendance -->
+    <section id="page-attendance" class="page glass-card p-6 rounded-3xl hidden">
+      <h2 class="text-lg font-bold mb-4 text-amber-400">📊 ประวัติเข้างานทั้งหมด (สรุป 1 บรรทัด/คน/วัน)</h2>
+      <div class="overflow-x-auto"><table class="w-full text-left text-sm" id="attendanceTable"></table></div>
+    </section>
+
+    <!-- Page 5: Summary by Date & Shift -->
+    <section id="page-summary" class="page glass-card p-6 rounded-3xl hidden">
+      <h2 class="text-lg font-bold mb-4 text-rose-400">📈 สรุปรายงานประจำวัน (แยกตามกะ)</h2>
+      
+      <div class="mb-5 flex flex-col md:flex-row items-center gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
+        <label class="text-sm text-slate-300 font-medium whitespace-nowrap">เลือกวันที่ต้องการดูสรุป:</label>
+        <input type="date" id="summaryDateFilter" onchange="loadSummaryShifts()" class="bg-slate-950 border border-slate-700 rounded-xl p-2 text-sm text-white w-full md:w-auto">
+      </div>
+
+      <!-- ส่วนแสดงรายชื่อกะในวันนั้น -->
+      <div id="summaryShiftContainer">
+        <p class="text-slate-400 text-sm text-center py-6">กรุณาเลือกวันที่ด้านบนเพื่อดูข้อมูลกะทำงาน</p>
+      </div>
+
+      <!-- ส่วนแสดงตารางรายละเอียดเมื่อกดเลือกกะ -->
+      <div id="summaryDetailContainer" class="mt-6 hidden">
+        <div class="flex items-center justify-between mb-3">
+          <h3 id="summaryDetailTitle" class="text-md font-bold text-amber-300">รายละเอียดกะ: -</h3>
+          <button onclick="backToSummaryShifts()" class="px-3 py-1 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs text-white">⬅️ กลับไปเลือกกะ</button>
+        </div>
+        <div class="overflow-x-auto">
+          <table class="w-full text-left text-sm" id="summaryDetailTable"></table>
+        </div>
+      </div>
+    </section>
+
   </div>
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    const webAppUrl = "YOUR_WEB_APP_URL_HERE"; // ถ้าใช้ HTML แยกเว็บให้เอา URL มาใส่ตรงนี้ แต่ถ้าใช้ใน Apps Script ลบตรงนี้ได้แล้วใช้ google.script.run
-    
-    let globalEmployees = [];
+    let GAS_URL = localStorage.getItem("CUSTOM_GAS_URL") || "";
+    let employeesData = [];
+    let attendancesRaw = [];
+    let shiftsData = [];
+    let faceMatcher = null;
+    let scanCooldown = false;
+    let currentScanMode = "IN";
+    let isCameraActive = false;
+    let mediaStream = null;
 
-    window.onload = () => loadData();
-
-    function loadData() {
-      // ดึงข้อมูลผ่าน Web App (doGet)
-      google.script.run.withSuccessHandler(function(data) {
-          // ใส่ตัวเลือก Shift
-          const shiftSelect = document.getElementById("empShift");
-          shiftSelect.innerHTML = "";
-          data.shifts.forEach(sh => {
-            let opt = document.createElement("option");
-            opt.value = sh; opt.innerText = sh;
-            shiftSelect.appendChild(opt);
-          });
-
-          globalEmployees = data.employees;
-
-          // สร้างตารางประวัติ
-          const tbody = document.getElementById("historyTableBody");
-          tbody.innerHTML = "";
-          if (data.attendances.length === 0) {
-            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted">ไม่มีข้อมูล</td></tr>';
-            return;
-          }
-
-          data.attendances.forEach(row => {
-            let tr = document.createElement("tr");
-            tr.innerHTML = `
-              <td>${row.date}</td>
-              <td class="text-green">${row.id}</td>
-              <td>${row.name}</td>
-              <td class="text-yellow">${row.shift}</td>
-              <td>${row.timeIn}</td>
-              <td>${row.timeOut}</td>
-              <td>${row.ot}</td>
-            `;
-            tbody.appendChild(tr);
-          });
-      }).getInitialData_();
+    function showPage(pageId) {
+      document.querySelectorAll('.page').forEach(el => el.classList.add('hidden'));
+      document.getElementById(`page-${pageId}`).classList.remove('hidden');
+      if (pageId !== 'scan') {
+        stopCamera();
+      }
+      if (pageId === 'summary') {
+        const dateInput = document.getElementById('summaryDateFilter');
+        if (!dateInput.value) {
+          const today = new Date().toISOString().split('T')[0];
+          dateInput.value = today;
+        }
+        loadSummaryShifts();
+      }
     }
 
-    function submitScan(mode) {
-      const id = document.getElementById("empId").value.trim();
-      const shift = document.getElementById("empShift").value;
-      const msg = document.getElementById("statusMsg");
+    function setScanMode(mode) {
+      currentScanMode = mode;
+      const btnIn = document.getElementById('btnModeIn');
+      const btnOut = document.getElementById('btnModeOut');
+      if (mode === 'IN') {
+        btnIn.classList.add('mode-btn-active'); btnIn.classList.remove('opacity-60');
+        btnOut.classList.remove('mode-btn-active'); btnOut.classList.add('opacity-60');
+      } else {
+        btnOut.classList.add('mode-btn-active'); btnOut.classList.remove('opacity-60');
+        btnIn.classList.remove('mode-btn-active'); btnIn.classList.add('opacity-60');
+      }
+    }
 
-      if (!id) {
-         msg.innerText = "กรุณาระบุรหัสพนักงาน!";
-         msg.className = "mt-3 text-center fw-bold text-danger";
-         return;
+    async function safeFetchJson(url, options = {}) {
+      try {
+        const res = await fetch(url, options);
+        const text = await res.text();
+        try { 
+          return JSON.parse(text); 
+        } catch (err) { 
+          throw new Error("URL ไม่ถูกต้อง หรือไม่ได้ตั้งค่าสิทธิ์ Web App เป็น Everyone"); 
+        }
+      } catch (err) {
+        throw new Error(err.message || "ไม่สามารถเชื่อมต่อกับ Web App ได้");
+      }
+    }
+
+    async function initData() {
+      if (!GAS_URL) return;
+      document.getElementById("gasUrlInput").value = GAS_URL;
+      
+      try {
+        const data = await safeFetchJson(`${GAS_URL}?action=getInitialData`);
+        
+        if (data.webAppUrl && data.webAppUrl.includes("script.google.com")) {
+          GAS_URL = data.webAppUrl;
+          localStorage.setItem("CUSTOM_GAS_URL", GAS_URL);
+          document.getElementById("gasUrlInput").value = GAS_URL;
+        }
+
+        const regWh = document.getElementById('regWarehouse');
+        regWh.innerHTML = '<option value="">-- เลือกคลังสินค้า --</option>';
+        (data.warehouses || []).forEach(wh => regWh.add(new Option(wh, wh)));
+
+        shiftsData = data.shifts || [];
+        const scanShift = document.getElementById('scanShift');
+        scanShift.innerHTML = '<option value="">-- กรุณาเลือกกะการทำงาน --</option>';
+        shiftsData.forEach(sh => scanShift.add(new Option(sh, sh)));
+
+        employeesData = data.employees || [];
+        attendancesRaw = data.attendances || [];
+
+        renderEmpTable();
+        renderAttTable(attendancesRaw);
+
+        await initFaceAPI();
+
+      } catch (err) {
+        alert("โหลดข้อมูลล้มเหลว: " + err.message);
+      }
+    }
+
+    function saveGasUrl() {
+      GAS_URL = document.getElementById("gasUrlInput").value.trim();
+      localStorage.setItem("CUSTOM_GAS_URL", GAS_URL);
+      initData();
+    }
+
+    async function initFaceAPI() {
+      const status = document.getElementById('modelLoadingStatus');
+      if (typeof faceapi === 'undefined') {
+        status.innerText = "❌ ไม่สามารถโหลดระบบตรวจจับใบหน้าได้ (โปรดตรวจสอบการเชื่อมต่ออินเทอร์เน็ต)";
+        status.className = "text-red-400 mb-2 text-center text-xs font-semibold";
+        return;
       }
 
-      // หาชื่อพนักงานจาก ID
-      const emp = globalEmployees.find(e => e.id === id);
-      const name = emp ? emp.name : "-";
-      const warehouse = emp ? emp.warehouse : "-";
+      try {
+        status.innerText = "⏳ กำลังโหลดระบบตรวจจับใบหน้า...";
+        status.className = "text-amber-400 mb-2 text-center text-xs font-semibold";
 
-      msg.innerText = "กำลังบันทึกข้อมูล...";
-      msg.className = "mt-3 text-center fw-bold text-warning";
+        const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
+        await faceapi.nets.tinyFaceDetector.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
+        await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
 
-      const payload = {
-        action: "recordAttendance",
-        data: { id: id, name: name, warehouse: warehouse, shift: shift, scanMode: mode }
-      };
-
-      // บันทึกผ่าน Google Script
-      google.script.run.withSuccessHandler(function(res) {
-          if (res.success) {
-            msg.innerText = `บันทึกเวลา ${mode} สำเร็จ!`;
-            msg.className = "mt-3 text-center fw-bold text-success";
-            document.getElementById("empId").value = "";
-            loadData(); // โหลดตารางใหม่
+        status.innerText = "⏳ กำลังประมวลผลฐานข้อมูลใบหน้า...";
+        
+        const labeledDescriptors = [];
+        for (const emp of employeesData) {
+          const photoSrc = emp.photoUrl || emp.photoBase64 || emp.photo;
+          if (!photoSrc) continue;
+          try {
+            const img = await fetchImageFromBase64(photoSrc);
+            const detection = await faceapi.detectSingleFace(img, new faceapi.TinyFaceDetectorOptions({ inputSize: 320 }))
+              .withFaceLandmarks()
+              .withFaceDescriptor();
+            if (detection) {
+              labeledDescriptors.push(new faceapi.LabeledFaceDescriptors(String(emp.id), [detection.descriptor]));
+            }
+          } catch(e) { 
+            console.warn("ข้ามรูป ID:", emp.id, e); 
           }
-      }).recordAttendance_(payload.data);
+        }
+
+        if (labeledDescriptors.length > 0) {
+          faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.50);
+          status.innerText = `✅ พร้อมสแกน (${labeledDescriptors.length} ใบหน้าในระบบ)`;
+          status.className = "text-emerald-400 mb-2 text-center text-xs font-semibold";
+        } else {
+          status.innerText = "❌ ไม่พบรูปใบหน้าพนักงานในระบบ กรุณาลงทะเบียนพนักงานก่อน";
+          status.className = "text-red-400 mb-2 text-center text-xs font-semibold";
+        }
+      } catch (err) {
+        status.innerText = "❌ โหลด Model ล้มเหลว: " + err.message;
+        status.className = "text-red-400 mb-2 text-center text-xs font-semibold";
+      }
     }
+
+    function fetchImageFromBase64(base64) {
+      return new Promise((resolve, reject) => {
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.onload = () => resolve(img);
+        img.onerror = reject;
+        img.src = base64;
+      });
+    }
+
+    function toggleCamera() {
+      if (isCameraActive) {
+        stopCamera();
+      } else {
+        startCamera();
+      }
+    }
+
+    async function startCamera() {
+      const video = document.getElementById('video');
+      const placeholder = document.getElementById('cameraPlaceholder');
+      const btnToggle = document.getElementById('btnToggleCam');
+
+      try {
+        mediaStream = await navigator.mediaDevices.getUserMedia({ 
+          video: { width: { ideal: 480 }, height: { ideal: 640 }, facingMode: "user" } 
+        });
+        video.srcObject = mediaStream;
+        video.onplay = () => { scanLoop(); };
+        
+        placeholder.classList.add('hidden');
+        btnToggle.innerText = "ปิดกล้อง";
+        btnToggle.className = "px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-sm font-semibold";
+        isCameraActive = true;
+      } catch(err) { 
+        alert("ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบสิทธิ์การใช้งานกล้องในเบราว์เซอร์"); 
+      }
+    }
+
+    function stopCamera() {
+      if (mediaStream) {
+        mediaStream.getTracks().forEach(track => track.stop());
+        mediaStream = null;
+      }
+      const video = document.getElementById('video');
+      if (video) video.srcObject = null;
+      
+      const placeholder = document.getElementById('cameraPlaceholder');
+      const btnToggle = document.getElementById('btnToggleCam');
+      
+      if (placeholder) placeholder.classList.remove('hidden');
+      if (btnToggle) {
+        btnToggle.innerText = "เปิดกล้อง";
+        btnToggle.className = "px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold";
+      }
+      isCameraActive = false;
+    }
+
+    async function scanLoop() {
+      const video = document.getElementById('video');
+      if (!isCameraActive || !video || video.paused || video.ended || !faceMatcher) return;
+
+      if (!scanCooldown) {
+        try {
+          const detection = await faceapi.detectSingleFace(video, new faceapi.TinyFaceDetectorOptions({ inputSize: 320, scoreThreshold: 0.5 }))
+            .withFaceLandmarks()
+            .withFaceDescriptor();
+          
+          if (detection) {
+            const match = faceMatcher.findBestMatch(detection.descriptor);
+            
+            if (match.label !== 'unknown') {
+              scanCooldown = true;
+              const emp = employeesData.find(e => String(e.id) === String(match.label));
+              if (emp) {
+                handleAutoScanSuccess(emp);
+              } else {
+                scanCooldown = false;
+              }
+            }
+          }
+        } catch(err) {
+          console.error("Scan loop error:", err);
+        }
+      }
+      
+      if (isCameraActive) {
+        setTimeout(() => requestAnimationFrame(scanLoop), 200);
+      }
+    }
+
+    async function handleAutoScanSuccess(emp) {
+      const shiftVal = document.getElementById('scanShift').value;
+      if (!shiftVal) {
+        alert("⚠️ กรุณาเลือกกะการทำงาน (Shift) ก่อนทำการสแกนหน้าค่ะ!");
+        scanCooldown = false;
+        return;
+      }
+
+      const overlay = document.getElementById('scanOverlay');
+      const resultBox = document.getElementById('scanResult');
+      const modeText = (currentScanMode === "IN") ? "ลงเวลาเข้างาน" : "ลงเวลาเลิกงาน";
+
+      overlay.classList.remove('hidden');
+      resultBox.className = (currentScanMode === "IN") 
+        ? "bg-emerald-600/95 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-lg text-center"
+        : "bg-rose-600/95 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-lg text-center";
+
+      resultBox.innerHTML = `✅ ${modeText}สำเร็จ!<br><span class="text-xs text-slate-200">รหัส: ${emp.id} | ชื่อ: ${emp.name}</span>`;
+
+      try {
+        const res = await safeFetchJson(GAS_URL, {
+          method: "POST",
+          body: JSON.stringify({
+            action: "recordAttendance",
+            data: { 
+              id: emp.id, 
+              name: emp.name, 
+              warehouse: emp.warehouse,
+              scanMode: currentScanMode,
+              shift: shiftVal
+            }
+          })
+        });
+        if (res && res.attendances) {
+          attendancesRaw = res.attendances;
+          renderAttTable(attendancesRaw);
+        }
+      } catch(e) { 
+        console.error("บันทึกเวลาล้มเหลว", e); 
+      }
+
+      setTimeout(() => {
+        overlay.classList.add('hidden');
+        scanCooldown = false;
+      }, 1500);
+    }
+
+    async function compressImage(file) {
+      return new Promise((resolve) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          const img = new Image();
+          img.onload = () => {
+            const canvas = document.createElement('canvas');
+            const MAX_SIZE = 320;
+            let w = img.width, h = img.height;
+            if (w > h && w > MAX_SIZE) { h *= MAX_SIZE / w; w = MAX_SIZE; } 
+            else if (h > MAX_SIZE) { w *= MAX_SIZE / h; h = MAX_SIZE; }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
+            resolve(canvas.toDataURL('image/jpeg', 0.7));
+          };
+          img.src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+      });
+    }
+
+    async function handleRegister(e) {
+      e.preventDefault();
+      const btn = document.getElementById('btnSubmitReg');
+      btn.disabled = true; btn.innerText = "⏳ กำลังบันทึก...";
+
+      try {
+        const base64 = await compressImage(document.getElementById('regPhoto').files[0]);
+        const payload = {
+          id: document.getElementById('regId').value,
+          name: document.getElementById('regName').value,
+          warehouse: document.getElementById('regWarehouse').value,
+          photoBase64: base64
+        };
+
+        const res = await safeFetchJson(GAS_URL, {
+          method: "POST",
+          body: JSON.stringify({ action: "registerEmployee", data: payload })
+        });
+
+        if (res.success) {
+          alert("บันทึกพนักงานสำเร็จ!");
+          document.getElementById('registerForm').reset();
+          initData();
+          showPage('scan');
+        } else { alert(res.message || "เกิดข้อผิดพลาดในการบันทึก"); }
+      } catch (err) { alert(err.message); }
+      finally { btn.disabled = false; btn.innerText = "บันทึกข้อมูล"; }
+    }
+
+    function renderEmpTable() {
+      const html = employeesData.map(e => {
+        const imgUrl = e.photoUrl || e.photoBase64 || e.photo || '';
+        return `
+        <tr class="border-b border-slate-700">
+          <td class="p-2">${imgUrl ? `<img src="${imgUrl}" class="w-8 h-8 rounded-full object-cover">` : ''}</td>
+          <td class="p-2 font-mono text-blue-400">${e.id}</td>
+          <td class="p-2">${e.name}</td>
+          <td class="p-2 text-slate-400">${e.warehouse || '-'}</td>
+        </tr>`;
+      }).join('');
+
+      document.getElementById('employeeTable').innerHTML = 
+        `<tr><th class="p-2 text-slate-400">รูป</th><th class="p-2 text-slate-400">รหัส</th><th class="p-2 text-slate-400">ชื่อ</th><th class="p-2 text-slate-400">คลัง</th></tr>` + html;
+    }
+
+    function formatTimeString(timeStr) {
+      if (!timeStr || timeStr === '-') return '-';
+      if (/^\d{2}:\d{2}(:\d{2})?$/.test(timeStr)) return timeStr;
+      const d = new Date(timeStr);
+      if (!isNaN(d.getTime())) {
+        return d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+      }
+      if (typeof timeStr === 'string' && timeStr.includes('T')) {
+        const parts = timeStr.split('T')[1];
+        if (parts) return parts.substring(0, 8);
+      }
+      return timeStr;
+    }
+
+    function renderAttTable(logs) {
+      const rows = (logs || []).map(l => `
+        <tr class="border-b border-slate-700">
+          <td class="p-2 text-xs text-slate-400">${l.date || '-'}</td>
+          <td class="p-2 text-emerald-400 font-mono">${l.id || '-'}</td>
+          <td class="p-2">${l.name || '-'}</td>
+          <td class="p-2 text-blue-300">${l.shift || '-'}</td>
+          <td class="p-2 text-slate-300">${formatTimeString(l.timeIn)}</td>
+          <td class="p-2 text-slate-300">${formatTimeString(l.timeOut)}</td>
+          <td class="p-2 text-amber-400 font-semibold">${l.ot && l.ot !== '-' ? l.ot : '-'}</td>
+        </tr>`).join('');
+
+      document.getElementById('attendanceTable').innerHTML = 
+        `<tr>
+           <th class="p-2 text-slate-400">วันที่</th>
+           <th class="p-2 text-slate-400">รหัส</th>
+           <th class="p-2 text-slate-400">ชื่อ</th>
+           <th class="p-2 text-slate-400">กะ (Shift)</th>
+           <th class="p-2 text-slate-400">Time in</th>
+           <th class="p-2 text-slate-400">Time out</th>
+           <th class="p-2 text-slate-400">OT</th>
+         </tr>` + rows;
+    }
+
+    // ฟังก์ชันแปลงรูปแบบวันที่ให้อยู่ในรูปแบบ YYYY-MM-DD เพื่อเปรียบเทียบค่าได้อย่างแม่นยำ
+    function normalizeDateStr(dateStr) {
+      if (!dateStr) return '';
+      let str = String(dateStr).trim();
+      if (str.includes('T')) str = str.split('T')[0];
+      
+      const sep = str.includes('/') ? '/' : (str.includes('-') ? '-' : null);
+      if (sep) {
+        const parts = str.split(sep);
+        if (parts.length === 3) {
+          // ถ้าปีขึ้นก่อน (YYYY-MM-DD)
+          if (parts[0].length === 4) {
+            let y = parseInt(parts[0]);
+            if (y > 2500) y -= 543;
+            return `${y}-${parts[1].padStart(2,'0')}-${parts[2].padStart(2,'0')}`;
+          }
+          // ถ้าปีอยู่หลัง (DD/MM/YYYY)
+          if (parts[2].length === 4) {
+            let y = parseInt(parts[2]);
+            if (y > 2500) y -= 543;
+            return `${y}-${parts[1].padStart(2,'0')}-${parts[0].padStart(2,'0')}`;
+          }
+        }
+      }
+      return str;
+    }
+
+    // ฟังก์ชันสำหรับหน้า 5: สรุปรายงานประจำวัน
+    function loadSummaryShifts() {
+      const selectedDate = document.getElementById('summaryDateFilter').value;
+      const container = document.getElementById('summaryShiftContainer');
+      document.getElementById('summaryDetailContainer').classList.add('hidden');
+
+      if (!selectedDate) {
+        container.innerHTML = '<p class="text-slate-400 text-sm text-center py-6">กรุณาเลือกวันที่</p>';
+        return;
+      }
+
+      // กรองข้อมูลเฉพาะวันที่เลือก
+      const targetLogs = attendancesRaw.filter(l => {
+        if (!l.date) return false;
+        return normalizeDateStr(l.date) === selectedDate;
+      });
+
+      // จัดกลุ่มตามกะ (Shift)
+      const shiftCounts = {};
+      targetLogs.forEach(l => {
+        const sh = (l.shift && l.shift !== '-') ? l.shift : 'ไม่ระบุกะ';
+        if (!shiftCounts[sh]) shiftCounts[sh] = 0;
+        shiftCounts[sh]++;
+      });
+
+      if (Object.keys(shiftCounts).length === 0) {
+        container.innerHTML = `<p class="text-slate-400 text-sm text-center py-6">📅 ไม่พบข้อมูลการสแกนในวันที่ ${selectedDate}</p>`;
+        return;
+      }
+
+      let html = `<p class="text-xs text-slate-400 mb-3">คลิกที่กะด้านล่างเพื่อดูรายชื่อพนักงานและเวลาเข้า-ออก:</p><div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-3">`;
+      for (const [shiftName, count] of Object.entries(shiftCounts)) {
+        html += `
+          <div onclick="showShiftDetail('${selectedDate}', '${shiftName}')" class="bg-slate-900 border border-slate-700 hover:border-rose-500 cursor-pointer p-4 rounded-2xl transition flex items-center justify-between shadow-md">
+            <div>
+              <h4 class="font-bold text-white text-base">${shiftName}</h4>
+              <p class="text-xs text-slate-400 mt-1">จำนวนพนักงาน</p>
+            </div>
+            <span class="bg-rose-600/20 text-rose-400 border border-rose-500/30 px-3 py-1 rounded-xl font-bold text-lg">${count} คน</span>
+          </div>`;
+      }
+      html += `</div>`;
+      container.innerHTML = html;
+    }
+
+    function showShiftDetail(dateStr, shiftName) {
+      document.getElementById('summaryShiftContainer').classList.add('hidden');
+      const detailContainer = document.getElementById('summaryDetailContainer');
+      detailContainer.classList.remove('hidden');
+
+      document.getElementById('summaryDetailTitle').innerText = `กะ: ${shiftName} (วันที่: ${dateStr})`;
+
+      const targetLogs = attendancesRaw.filter(l => {
+        const matchDate = (normalizeDateStr(l.date) === dateStr);
+        const currentShift = (l.shift && l.shift !== '-') ? l.shift : 'ไม่ระบุกะ';
+        const matchShift = (currentShift === shiftName);
+        return matchDate && matchShift;
+      });
+
+      const rows = targetLogs.map(l => `
+        <tr class="border-b border-slate-700">
+          <td class="p-2 text-emerald-400 font-mono">${l.id || '-'}</td>
+          <td class="p-2">${l.name || '-'}</td>
+          <td class="p-2 text-slate-300">${formatTimeString(l.timeIn)}</td>
+          <td class="p-2 text-slate-300">${formatTimeString(l.timeOut)}</td>
+          <td class="p-2 text-amber-400 font-semibold">${l.ot && l.ot !== '-' ? l.ot : '-'}</td>
+        </tr>`).join('');
+
+      document.getElementById('summaryDetailTable').innerHTML = 
+        `<tr>
+           <th class="p-2 text-slate-400">รหัส</th>
+           <th class="p-2 text-slate-400">ชื่อ</th>
+           <th class="p-2 text-slate-400">Time in</th>
+           <th class="p-2 text-slate-400">Time out</th>
+           <th class="p-2 text-slate-400">OT</th>
+         </tr>` + (rows || `<tr><td colspan="5" class="text-center p-4 text-slate-400">ไม่พบข้อมูล</td></tr>`);
+    }
+
+    function backToSummaryShifts() {
+      document.getElementById('summaryDetailContainer').classList.add('hidden');
+      document.getElementById('summaryShiftContainer').classList.remove('hidden');
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      showPage('scan');
+      if (GAS_URL) initData();
+    });
   </script>
 </body>
 </html>
