@@ -1,9 +1,9 @@
 <!DOCTYPE html>
-<html lang="th">
+<html lang="en">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ระบบบันทึกเวลาสแกนใบหน้า</title>
+  <title>Face Recognition Attendance System</title>
   <link href="https://fonts.googleapis.com/css2?family=Kanit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <script src="https://cdn.tailwindcss.com"></script>
   <script src="https://cdn.jsdelivr.net/npm/@vladmandic/face-api/dist/face-api.js"></script>
@@ -19,116 +19,116 @@
 <body class="min-h-screen pb-10" onload="initData()">
   <div class="max-w-5xl mx-auto px-4 pt-4">
     <header class="text-center mb-4">
-      <h1 class="text-2xl font-bold text-white">ระบบบันทึกเวลาสแกนใบหน้า</h1>
+      <h1 class="text-2xl font-bold text-white">Face Recognition Attendance System</h1>
     </header>
 
     <div class="glass-card p-3 rounded-2xl mb-4 flex items-center gap-3">
       <label class="whitespace-nowrap text-xs text-slate-300">🔗 Web App URL:</label>
       <input type="text" id="gasUrlInput" readonly class="w-full bg-slate-900 border border-slate-700 rounded-xl p-1.5 text-xs text-white opacity-80 cursor-not-allowed">
-      <button onclick="initData()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs text-white whitespace-nowrap">รีเฟรช</button>
+      <button onclick="initData()" class="px-3 py-1.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs text-white whitespace-nowrap">Refresh</button>
     </div>
 
     <nav class="grid grid-cols-2 md:grid-cols-5 gap-2 mb-4">
-      <button onclick="showPage('scan')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-emerald-400">1. สแกนหน้า</button>
-      <button onclick="showPage('register')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-blue-400">2. ลงทะเบียน</button>
-      <button onclick="showPage('manage')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-purple-400">3. พนักงาน</button>
-      <button onclick="showPage('attendance')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-amber-400">4. ประวัติ</button>
-      <button onclick="showPage('summary')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-rose-400 col-span-2 md:col-span-1">5. สรุปรายกะ</button>
+      <button onclick="showPage('scan')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-emerald-400">1. Scan Face</button>
+      <button onclick="showPage('register')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-blue-400">2. Register</button>
+      <button onclick="showPage('manage')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-purple-400">3. Employees</button>
+      <button onclick="showPage('attendance')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-amber-400">4. History</button>
+      <button onclick="showPage('summary')" class="btn-big bg-slate-800 hover:bg-slate-700 rounded-xl text-rose-400 col-span-2 md:col-span-1">5. Shift Summary</button>
     </nav>
 
     <!-- Page 1: Scan -->
     <section id="page-scan" class="page glass-card p-4 rounded-3xl">
       <div class="grid grid-cols-2 gap-3 mb-4">
-        <button id="btnModeIn" onclick="setScanMode('IN')" class="py-3 rounded-2xl bg-emerald-600 text-white font-bold text-base mode-btn-active flex items-center justify-center gap-2">☀️ เข้างาน</button>
-        <button id="btnModeOut" onclick="setScanMode('OUT')" class="py-3 rounded-2xl bg-rose-600 text-white font-bold text-base opacity-60 flex items-center justify-center gap-2">🌙 เลิกงาน</button>
+        <button id="btnModeIn" onclick="setScanMode('IN')" class="py-3 rounded-2xl bg-emerald-600 text-white font-bold text-base mode-btn-active flex items-center justify-center gap-2">☀️ Check In</button>
+        <button id="btnModeOut" onclick="setScanMode('OUT')" class="py-3 rounded-2xl bg-rose-600 text-white font-bold text-base opacity-60 flex items-center justify-center gap-2">🌙 Check Out</button>
       </div>
 
       <div class="mb-3">
-        <label class="block text-xs text-slate-400 mb-1">🏢 เลือกคลังสินค้า (Warehouse) *:</label>
+        <label class="block text-xs text-slate-400 mb-1">🏢 Select Warehouse *:</label>
         <select id="scanWarehouse" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500">
-          <option value="">-- กรุณาเลือกคลังสินค้า --</option>
+          <option value="">-- Please Select Warehouse --</option>
         </select>
       </div>
 
       <div class="mb-4">
-        <label class="block text-xs text-slate-400 mb-1">⏳ เลือกกะการทำงาน (Shift) *จำเป็นสำหรับคำนวณ OT:</label>
+        <label class="block text-xs text-slate-400 mb-1">⏳ Select Shift * (Required for OT calculation):</label>
         <select id="scanShift" class="w-full bg-slate-900 border border-slate-700 rounded-xl p-3 text-sm text-white focus:outline-none focus:border-blue-500">
-          <option value="">-- กรุณาเลือก Shift --</option>
+          <option value="">-- Please Select Shift --</option>
         </select>
       </div>
 
-      <div id="modelLoadingStatus" class="text-amber-400 mb-2 text-center text-xs font-semibold">⏳ กำลังโหลด AI Model...</div>
+      <div id="modelLoadingStatus" class="text-amber-400 mb-2 text-center text-xs font-semibold">⏳ Loading AI Model...</div>
 
       <div class="camera-container relative bg-slate-950 rounded-2xl overflow-hidden shadow-2xl border border-slate-700 flex flex-col justify-center items-center">
         <div id="cameraPlaceholder" class="absolute inset-0 flex flex-col items-center justify-center bg-slate-900/90 z-10">
-          <p class="text-slate-400 mb-3 text-sm">กล้องถูกปิดอยู่</p>
-          <button onclick="toggleCamera()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm shadow-lg">📷 เปิดกล้องสแกน</button>
+          <p class="text-slate-400 mb-3 text-sm">Camera is turned off</p>
+          <button onclick="toggleCamera()" class="px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl font-bold text-sm shadow-lg">📷 Open Camera</button>
         </div>
         <video id="video" autoplay muted playsinline class="w-full h-full object-cover"></video>
         <div id="scanOverlay" class="absolute bottom-4 left-1/2 -translate-x-1/2 hidden w-11/12 max-w-md pointer-events-none z-20">
-           <div id="scanResult" class="bg-emerald-600/95 text-white px-4 py-2.5 rounded-xl font-medium text-sm text-center shadow-lg border border-emerald-400 backdrop-blur-md">✅ สแกนสำเร็จ</div>
+           <div id="scanResult" class="bg-emerald-600/95 text-white px-4 py-2.5 rounded-xl font-medium text-sm text-center shadow-lg border border-emerald-400 backdrop-blur-md">✅ Scan Successful</div>
         </div>
       </div>
 
       <div class="flex justify-center mt-4">
-        <button id="btnToggleCam" onclick="toggleCamera()" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-semibold">เปิดกล้อง</button>
+        <button id="btnToggleCam" onclick="toggleCamera()" class="px-6 py-2 bg-slate-700 hover:bg-slate-600 text-white rounded-xl text-sm font-semibold">Open Camera</button>
       </div>
     </section>
 
     <!-- Page 2: Register -->
     <section id="page-register" class="page glass-card p-6 rounded-3xl hidden">
-      <h2 class="text-lg font-bold mb-4 text-blue-400">📝 ลงทะเบียนพนักงาน</h2>
+      <h2 class="text-lg font-bold mb-4 text-blue-400">📝 Employee Registration</h2>
       <form id="registerForm" class="space-y-4" onsubmit="handleRegister(event)">
-        <input type="text" id="regId" placeholder="รหัสพนักงาน" required class="w-full bg-slate-900 rounded-xl p-3 text-sm text-white border border-slate-700">
-        <input type="text" id="regName" placeholder="ชื่อ-นามสกุล" required class="w-full bg-slate-900 rounded-xl p-3 text-sm text-white border border-slate-700">
+        <input type="text" id="regId" placeholder="Employee ID" required class="w-full bg-slate-900 rounded-xl p-3 text-sm text-white border border-slate-700">
+        <input type="text" id="regName" placeholder="First & Last Name" required class="w-full bg-slate-900 rounded-xl p-3 text-sm text-white border border-slate-700">
         <select id="regWarehouse" required class="w-full bg-slate-900 rounded-xl p-3 text-sm text-white border border-slate-700">
-          <option value="">-- เลือกคลังสินค้าประจำตัว --</option>
+          <option value="">-- Select Assigned Warehouse --</option>
         </select>
         <input type="file" id="regPhoto" accept="image/*" required class="w-full bg-slate-900 rounded-xl p-2 text-sm text-slate-400 border border-slate-700">
-        <button type="submit" id="btnSubmitReg" class="w-full bg-blue-600 hover:bg-blue-500 p-3 rounded-xl font-bold text-sm text-white">บันทึกข้อมูล</button>
+        <button type="submit" id="btnSubmitReg" class="w-full bg-blue-600 hover:bg-blue-500 p-3 rounded-xl font-bold text-sm text-white">Save Employee</button>
       </form>
     </section>
 
     <!-- Page 3: Manage -->
     <section id="page-manage" class="page glass-card p-6 rounded-3xl hidden">
-      <h2 class="text-lg font-bold mb-4 text-purple-400">👥 รายชื่อพนักงาน</h2>
+      <h2 class="text-lg font-bold mb-4 text-purple-400">👥 Employee Directory</h2>
       <div class="overflow-x-auto"><table class="w-full text-left text-sm" id="employeeTable"></table></div>
     </section>
 
     <!-- Page 4: Attendance -->
     <section id="page-attendance" class="page glass-card p-6 rounded-3xl hidden">
-      <h2 class="text-lg font-bold mb-4 text-amber-400">📊 ประวัติเข้างานทั้งหมด (สรุป 1 บรรทัด/คน/วัน)</h2>
+      <h2 class="text-lg font-bold mb-4 text-amber-400">📊 Attendance History</h2>
       <div class="overflow-x-auto"><table class="w-full text-left text-sm" id="attendanceTable"></table></div>
     </section>
 
     <!-- Page 5: Summary by Date & Shift -->
     <section id="page-summary" class="page glass-card p-6 rounded-3xl hidden">
-      <h2 class="text-lg font-bold mb-4 text-rose-400">📈 สรุปรายงานประจำวัน (แยกตามกะ)</h2>
+      <h2 class="text-lg font-bold mb-4 text-rose-400">📈 Daily Shift Summary</h2>
       
-      <!-- ส่วนตัวกรอง (วันที่ + คลังสินค้า) -->
+      <!-- Filters -->
       <div class="mb-5 grid grid-cols-1 md:grid-cols-2 gap-3 bg-slate-900/60 p-4 rounded-2xl border border-slate-800">
         <div>
-          <label class="block text-xs text-slate-400 mb-1">📅 เลือกวันที่ต้องการดูสรุป:</label>
+          <label class="block text-xs text-slate-400 mb-1">📅 Select Date:</label>
           <input type="date" id="summaryDateFilter" onchange="loadSummaryShifts()" class="bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm text-white w-full">
         </div>
         <div>
-          <label class="block text-xs text-slate-400 mb-1">🏢 กรองตามคลังสินค้า:</label>
+          <label class="block text-xs text-slate-400 mb-1">🏢 Filter by Warehouse:</label>
           <select id="summaryWarehouseFilter" onchange="loadSummaryShifts()" class="bg-slate-950 border border-slate-700 rounded-xl p-2.5 text-sm text-white w-full">
-            <option value="">-- ทุกคลังสินค้า --</option>
+            <option value="">-- All Warehouses --</option>
           </select>
         </div>
       </div>
 
       <div id="summaryShiftContainer">
-        <p class="text-slate-400 text-sm text-center py-6">กรุณาเลือกวันที่ด้านบนเพื่อดูข้อมูลกะทำงาน</p>
+        <p class="text-slate-400 text-sm text-center py-6">Please select a date above to view shift details.</p>
       </div>
 
       <div id="summaryDetailContainer" class="mt-6 hidden">
         <div class="flex flex-wrap items-center justify-between gap-2 mb-3 bg-slate-900/40 p-3 rounded-xl border border-slate-800">
-          <h3 id="summaryDetailTitle" class="text-sm md:text-md font-bold text-amber-300">รายละเอียดกะ: -</h3>
+          <h3 id="summaryDetailTitle" class="text-sm md:text-md font-bold text-amber-300">Shift Details: -</h3>
           <div class="flex items-center gap-2">
-            <button onclick="downloadCurrentShiftCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-semibold text-white transition-all shadow flex items-center gap-1">📥 ดาวน์โหลดรายชื่อ</button>
-            <button onclick="backToSummaryShifts()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs text-white transition-all shadow">⬅️ กลับไปหน้าสรุป</button>
+            <button onclick="downloadCurrentShiftCSV()" class="px-3 py-1.5 bg-emerald-600 hover:bg-emerald-500 rounded-xl text-xs font-semibold text-white transition-all shadow flex items-center gap-1">📥 Download CSV</button>
+            <button onclick="backToSummaryShifts()" class="px-3 py-1.5 bg-slate-700 hover:bg-slate-600 rounded-xl text-xs text-white transition-all shadow">⬅️ Back</button>
           </div>
         </div>
         <div class="overflow-x-auto">
@@ -151,7 +151,6 @@
     let isCameraActive = false;
     let mediaStream = null;
 
-    // ตัวแปรเก็บสถานะหน้าแสดงรายละเอียดปัจจุบัน สำหรับใช้ดาวน์โหลด
     let currentActiveShift = "";
     let currentActiveWarehouse = "";
     let currentActiveDateStr = "";
@@ -169,7 +168,7 @@
         
         const sumWh = document.getElementById('summaryWarehouseFilter');
         const currentSelectedWh = sumWh.value;
-        sumWh.innerHTML = '<option value="">-- ทุกคลังสินค้า --</option>';
+        sumWh.innerHTML = '<option value="">-- All Warehouses --</option>';
         warehousesData.forEach(wh => sumWh.add(new Option(wh, wh)));
         sumWh.value = currentSelectedWh;
 
@@ -195,9 +194,9 @@
         const res = await fetch(url, options);
         const text = await res.text();
         try { return JSON.parse(text); } 
-        catch (err) { throw new Error("URL ไม่ถูกต้อง หรือไม่ได้ตั้งค่าสิทธิ์ Web App เป็น Everyone"); }
+        catch (err) { throw new Error("Invalid URL or Web App permission not set to 'Anyone'"); }
       } catch (err) {
-        throw new Error(err.message || "ไม่สามารถเชื่อมต่อกับ Web App ได้");
+        throw new Error(err.message || "Cannot connect to Web App");
       }
     }
 
@@ -216,16 +215,16 @@
 
         warehousesData = data.warehouses || [];
         const scanWh = document.getElementById('scanWarehouse');
-        scanWh.innerHTML = '<option value="">-- กรุณาเลือกคลังสินค้า --</option>';
+        scanWh.innerHTML = '<option value="">-- Please Select Warehouse --</option>';
         warehousesData.forEach(wh => scanWh.add(new Option(wh, wh)));
 
         const regWh = document.getElementById('regWarehouse');
-        regWh.innerHTML = '<option value="">-- เลือกคลังสินค้าประจำตัว --</option>';
+        regWh.innerHTML = '<option value="">-- Select Assigned Warehouse --</option>';
         warehousesData.forEach(wh => regWh.add(new Option(wh, wh)));
 
         shiftsData = data.shifts || [];
         const scanShift = document.getElementById('scanShift');
-        scanShift.innerHTML = '<option value="">-- กรุณาเลือก Shift --</option>';
+        scanShift.innerHTML = '<option value="">-- Please Select Shift --</option>';
         shiftsData.forEach(sh => scanShift.add(new Option(sh, sh)));
 
         employeesData = data.employees || [];
@@ -245,16 +244,16 @@
             const data2 = await safeFetchJson(`${GAS_URL}?action=getInitialData`);
             warehousesData = data2.warehouses || [];
             const scanWh = document.getElementById('scanWarehouse');
-            scanWh.innerHTML = '<option value="">-- กรุณาเลือกคลังสินค้า --</option>';
+            scanWh.innerHTML = '<option value="">-- Please Select Warehouse --</option>';
             warehousesData.forEach(wh => scanWh.add(new Option(wh, wh)));
 
             const regWh = document.getElementById('regWarehouse');
-            regWh.innerHTML = '<option value="">-- เลือกคลังสินค้าประจำตัว --</option>';
+            regWh.innerHTML = '<option value="">-- Select Assigned Warehouse --</option>';
             warehousesData.forEach(wh => regWh.add(new Option(wh, wh)));
 
             shiftsData = data2.shifts || [];
             const scanShift = document.getElementById('scanShift');
-            scanShift.innerHTML = '<option value="">-- กรุณาเลือก Shift --</option>';
+            scanShift.innerHTML = '<option value="">-- Please Select Shift --</option>';
             shiftsData.forEach(sh => scanShift.add(new Option(sh, sh)));
 
             employeesData = data2.employees || [];
@@ -265,20 +264,20 @@
             return;
           } catch(e) {}
         }
-        alert("โหลดข้อมูลล้มเหลว: " + err.message);
+        alert("Failed to load data: " + err.message);
       }
     }
 
     async function initFaceAPI() {
       const status = document.getElementById('modelLoadingStatus');
       if (typeof faceapi === 'undefined') {
-        status.innerText = "❌ ไม่สามารถโหลดระบบตรวจจับใบหน้าได้";
+        status.innerText = "❌ Failed to load face recognition library";
         status.className = "text-red-400 mb-2 text-center text-xs font-semibold";
         return;
       }
 
       try {
-        status.innerText = "⏳ กำลังโหลดระบบตรวจจับใบหน้า...";
+        status.innerText = "⏳ Loading face detection models...";
         status.className = "text-amber-400 mb-2 text-center text-xs font-semibold";
 
         const MODEL_URL = 'https://cdn.jsdelivr.net/npm/@vladmandic/face-api/model/';
@@ -286,7 +285,7 @@
         await faceapi.nets.faceLandmark68Net.loadFromUri(MODEL_URL);
         await faceapi.nets.faceRecognitionNet.loadFromUri(MODEL_URL);
 
-        status.innerText = "⏳ กำลังประมวลผลฐานข้อมูลใบหน้า...";
+        status.innerText = "⏳ Processing employee facial data...";
         
         const labeledDescriptors = [];
         for (const emp of employeesData) {
@@ -305,14 +304,14 @@
 
         if (labeledDescriptors.length > 0) {
           faceMatcher = new faceapi.FaceMatcher(labeledDescriptors, 0.50);
-          status.innerText = `✅ พร้อมสแกน (${labeledDescriptors.length} ใบหน้าในระบบ)`;
+          status.innerText = `✅ Ready to scan (${labeledDescriptors.length} faces loaded)`;
           status.className = "text-emerald-400 mb-2 text-center text-xs font-semibold";
         } else {
-          status.innerText = "❌ ไม่พบรูปใบหน้าพนักงานในระบบ";
+          status.innerText = "❌ No employee face photos found in system";
           status.className = "text-red-400 mb-2 text-center text-xs font-semibold";
         }
       } catch (err) {
-        status.innerText = "❌ โหลด Model ล้มเหลว: " + err.message;
+        status.innerText = "❌ Failed to load models: " + err.message;
         status.className = "text-red-400 mb-2 text-center text-xs font-semibold";
       }
     }
@@ -345,10 +344,10 @@
         video.onplay = () => { scanLoop(); };
         
         placeholder.classList.add('hidden');
-        btnToggle.innerText = "ปิดกล้อง";
+        btnToggle.innerText = "Close Camera";
         btnToggle.className = "px-6 py-2 bg-rose-600 hover:bg-rose-500 text-white rounded-xl text-sm font-semibold";
         isCameraActive = true;
-      } catch(err) { alert("ไม่สามารถเปิดกล้องได้ กรุณาตรวจสอบสิทธิ์การใช้งานกล้อง"); }
+      } catch(err) { alert("Unable to access camera. Please check permissions."); }
     }
 
     function stopCamera() {
@@ -364,7 +363,7 @@
       
       if (placeholder) placeholder.classList.remove('hidden');
       if (btnToggle) {
-        btnToggle.innerText = "เปิดกล้อง";
+        btnToggle.innerText = "Open Camera";
         btnToggle.className = "px-6 py-2 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-sm font-semibold";
       }
       isCameraActive = false;
@@ -399,26 +398,26 @@
       const shiftVal = document.getElementById('scanShift').value;
 
       if (!warehouseVal) {
-        alert("⚠️ กรุณาเลือก 'คลังสินค้า' ก่อนทำการสแกนหน้า!");
+        alert("⚠️ Please select a Warehouse before scanning!");
         scanCooldown = false;
         return;
       }
       if (!shiftVal) {
-        alert("⚠️ กรุณาเลือก 'กะการทำงาน (Shift)' ก่อนทำการสแกนหน้า!");
+        alert("⚠️ Please select a Shift before scanning!");
         scanCooldown = false;
         return;
       }
 
       const overlay = document.getElementById('scanOverlay');
       const resultBox = document.getElementById('scanResult');
-      const modeText = (currentScanMode === "IN") ? "ลงเวลาเข้างาน" : "ลงเวลาเลิกงาน";
+      const modeText = (currentScanMode === "IN") ? "Check-in" : "Check-out";
 
       overlay.classList.remove('hidden');
       resultBox.className = (currentScanMode === "IN") 
         ? "bg-emerald-600/95 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-lg text-center"
         : "bg-rose-600/95 text-white px-4 py-2.5 rounded-xl text-sm font-medium shadow-lg text-center";
 
-      resultBox.innerHTML = `✅ ${modeText}สำเร็จ!<br><span class="text-xs text-slate-200">รหัส: ${emp.id} | ชื่อ: ${emp.name} | คลัง: ${warehouseVal}</span>`;
+      resultBox.innerHTML = `✅ ${modeText} Successful!<br><span class="text-xs text-slate-200">ID: ${emp.id} | Name: ${emp.name} | WH: ${warehouseVal}</span>`;
 
       try {
         await safeFetchJson(GAS_URL, {
@@ -472,7 +471,7 @@
     async function handleRegister(e) {
       e.preventDefault();
       const btn = document.getElementById('btnSubmitReg');
-      btn.disabled = true; btn.innerText = "⏳ กำลังบันทึก...";
+      btn.disabled = true; btn.innerText = "⏳ Saving...";
 
       try {
         const base64 = await compressImage(document.getElementById('regPhoto').files[0]);
@@ -489,13 +488,13 @@
         });
 
         if (res.success) {
-          alert("บันทึกพนักงานสำเร็จ!");
+          alert("Employee registered successfully!");
           document.getElementById('registerForm').reset();
           initData();
           showPage('scan');
-        } else { alert(res.message || "เกิดข้อผิดพลาด"); }
+        } else { alert(res.message || "An error occurred"); }
       } catch (err) { alert(err.message); }
-      finally { btn.disabled = false; btn.innerText = "บันทึกข้อมูล"; }
+      finally { btn.disabled = false; btn.innerText = "Save Employee"; }
     }
 
     function renderEmpTable() {
@@ -511,7 +510,7 @@
       }).join('');
 
       document.getElementById('employeeTable').innerHTML = 
-        `<tr><th class="p-2 text-slate-400">รูป</th><th class="p-2 text-slate-400">รหัส</th><th class="p-2 text-slate-400">ชื่อ</th><th class="p-2 text-slate-400">คลังประจำตัว</th></tr>` + html;
+        `<tr><th class="p-2 text-slate-400">Photo</th><th class="p-2 text-slate-400">ID</th><th class="p-2 text-slate-400">Name</th><th class="p-2 text-slate-400">Warehouse</th></tr>` + html;
     }
 
     function formatTimeString(timeStr) {
@@ -520,7 +519,7 @@
       
       const d = new Date(timeStr);
       if (!isNaN(d.getTime())) {
-        return d.toLocaleTimeString('th-TH', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
+        return d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit', second: '2-digit', hour12: false });
       }
       if (typeof timeStr === 'string' && timeStr.includes('T')) {
         const parts = timeStr.split('T')[1];
@@ -544,18 +543,17 @@
 
       document.getElementById('attendanceTable').innerHTML = 
         `<tr>
-           <th class="p-2 text-slate-400">วันที่</th>
-           <th class="p-2 text-slate-400">รหัส</th>
-           <th class="p-2 text-slate-400">ชื่อ</th>
-           <th class="p-2 text-slate-400">คลัง</th>
-           <th class="p-2 text-slate-400">กะ (Shift)</th>
-           <th class="p-2 text-slate-400">Time in</th>
-           <th class="p-2 text-slate-400">Time out</th>
+           <th class="p-2 text-slate-400">Date</th>
+           <th class="p-2 text-slate-400">ID</th>
+           <th class="p-2 text-slate-400">Name</th>
+           <th class="p-2 text-slate-400">Warehouse</th>
+           <th class="p-2 text-slate-400">Shift</th>
+           <th class="p-2 text-slate-400">Time In</th>
+           <th class="p-2 text-slate-400">Time Out</th>
            <th class="p-2 text-slate-400">OT</th>
          </tr>` + rows;
     }
 
-    // --- ฟังก์ชันสำหรับหน้า 5: สรุปรายงานประจำวัน (แยกตามกะ + คลัง) ---
     function convertDateToDDMMYYYY(isoDateStr) {
       if (!isoDateStr) return "";
       const parts = isoDateStr.split("-");
@@ -580,14 +578,14 @@
       }
 
       if (matchedLogs.length === 0) {
-        container.innerHTML = `<p class="text-slate-400 text-sm text-center py-6">ไม่พบข้อมูลการลงเวลาในวันที่ ${targetDateStr}${warehouseFilterVal ? ' (คลัง: ' + warehouseFilterVal + ')' : ''}</p>`;
+        container.innerHTML = `<p class="text-slate-400 text-sm text-center py-6">No attendance records found for ${targetDateStr}${warehouseFilterVal ? ' (Warehouse: ' + warehouseFilterVal + ')' : ''}</p>`;
         return;
       }
 
       const shiftGroups = {};
       matchedLogs.forEach(l => {
-        const sh = l.shift || "ไม่ระบุุุกะ";
-        const wh = l.warehouse || "ไม่ระบุคลัง";
+        const sh = l.shift || "Unspecified Shift";
+        const wh = l.warehouse || "Unspecified Warehouse";
         const groupKey = `${sh}___${wh}`;
         if (!shiftGroups[groupKey]) {
           shiftGroups[groupKey] = { shift: sh, warehouse: wh, logs: [] };
@@ -603,11 +601,11 @@
               <div class="flex items-center gap-2 mb-1">
                 <span class="px-2 py-0.5 bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 rounded-lg text-xs font-semibold">🏢 ${data.warehouse}</span>
               </div>
-              <h3 class="text-md font-bold text-white mt-1">กะ: ${data.shift}</h3>
-              <p class="text-xs text-slate-300 mt-2">จำนวนพนักงาน: <span class="text-emerald-400 font-bold">${data.logs.length}</span> คน</p>
+              <h3 class="text-md font-bold text-white mt-1">Shift: ${data.shift}</h3>
+              <p class="text-xs text-slate-300 mt-2">Total Employees: <span class="text-emerald-400 font-bold">${data.logs.length}</span></p>
             </div>
             <button onclick="viewShiftDetail('${data.shift}', '${data.warehouse}', '${targetDateStr}')" class="px-4 py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-semibold text-white transition-all shadow whitespace-nowrap">
-              ดูรายชื่อพนักงาน ➡️
+              View List ➡️
             </button>
           </div>`;
       }
@@ -622,7 +620,7 @@
 
       document.getElementById('summaryShiftContainer').classList.add('hidden');
       document.getElementById('summaryDetailContainer').classList.remove('hidden');
-      document.getElementById('summaryDetailTitle').innerText = `🏢 คลัง: ${warehouseName} | กะ: ${shiftName} (${dateStr})`;
+      document.getElementById('summaryDetailTitle').innerText = `🏢 Warehouse: ${warehouseName} | Shift: ${shiftName} (${dateStr})`;
 
       const matchedLogs = attendancesRaw.filter(l => l.date === dateStr && l.shift === shiftName && l.warehouse === warehouseName);
 
@@ -640,11 +638,11 @@
       document.getElementById('summaryDetailTable').innerHTML = `
         <tr>
           <th class="p-2 text-slate-400 text-center w-12">#</th>
-          <th class="p-2 text-slate-400">รหัส</th>
-          <th class="p-2 text-slate-400">ชื่อ</th>
-          <th class="p-2 text-slate-400">คลัง</th>
-          <th class="p-2 text-slate-400">Time in</th>
-          <th class="p-2 text-slate-400">Time out</th>
+          <th class="p-2 text-slate-400">ID</th>
+          <th class="p-2 text-slate-400">Name</th>
+          <th class="p-2 text-slate-400">Warehouse</th>
+          <th class="p-2 text-slate-400">Time In</th>
+          <th class="p-2 text-slate-400">Time Out</th>
           <th class="p-2 text-slate-400">OT</th>
         </tr>` + rows;
     }
@@ -652,12 +650,12 @@
     function downloadCurrentShiftCSV() {
       const matchedLogs = attendancesRaw.filter(l => l.date === currentActiveDateStr && l.shift === currentActiveShift && l.warehouse === currentActiveWarehouse);
       if (matchedLogs.length === 0) {
-        alert("ไม่พบข้อมูลสำหรับดาวน์โหลด");
+        alert("No data available to download");
         return;
       }
 
-      let csvContent = "\uFEFF"; // BOM สำหรับรองรับภาษาไทยใน Excel
-      csvContent += "ลำดับ,รหัสพนักงาน,ชื่อ-นามสกุล,คลังสินค้า,กะการทำงาน,เวลาเข้างาน,เวลาเลิกงาน,OT\n";
+      let csvContent = "\uFEFF"; // BOM for Excel Thai language support
+      csvContent += "No,Employee ID,Full Name,Warehouse,Shift,Time In,Time Out,OT\n";
 
       matchedLogs.forEach((l, idx) => {
         const row = [
@@ -677,7 +675,7 @@
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a');
       a.href = url;
-      a.download = `สรุปรายชื่อ_${currentActiveWarehouse}_กะ_${currentActiveShift}_${currentActiveDateStr.replace(/\//g, '-')}.csv`;
+      a.download = `Shift_Summary_${currentActiveWarehouse}_${currentActiveShift}_${currentActiveDateStr.replace(/\//g, '-')}.csv`;
       document.body.appendChild(a);
       a.click();
       document.body.removeChild(a);
